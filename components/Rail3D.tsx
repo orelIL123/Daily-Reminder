@@ -7,7 +7,6 @@ import {
 } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import type { Product } from '@/lib/products';
-import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/money';
 
 /*
@@ -82,7 +81,6 @@ export default function Rail3D({ products, onActiveChange, onOpen }: Props) {
   const target = useRef(0);
   const [activeSlot, setActiveSlot] = useState(0);
   const [stage, setStage] = useState(0); // how many turns the centred piece has made
-  const cart = useCart();
 
   const settleTo = useCallback((slotTarget: number, velocityHint?: number) => {
     anim.current?.stop();
@@ -180,14 +178,9 @@ export default function Rail3D({ products, onActiveChange, onOpen }: Props) {
     const product = products[slot % P];
     const turns = viewsOf(product).length - 1;
     if (stage < turns) { setStage(stage + 1); return; }
-    // last tap: quick-add pieces go straight to the bag, the rest open the product sheet
-    if (product.quickSize) {
-      cart.add({ productId: product.id, size: product.quickSize, color: product.colors[0] ?? '', qty: 1 });
-      cart.open();
-      window.setTimeout(() => setStage(0), 450);
-    } else {
-      onOpen(product);
-    }
+    // last tap opens the blurred product view (size + add to bag)
+    onOpen(product);
+    window.setTimeout(() => setStage(0), 600);
   }
 
   // static rail segments that form the curved bar
@@ -209,7 +202,7 @@ export default function Rail3D({ products, onActiveChange, onOpen }: Props) {
   const hint = stage === 0
     ? 'Drag the rail · tap a piece to turn it'
     : stage < curTurns ? 'Tap again to see the back'
-    : cur.quickSize ? 'Tap again to add to bag' : 'Tap again to look closer';
+    : 'Tap again to choose a size';
   const gh = geo.gw * IMAGE_RATIO;
 
   return (

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDown, ArrowRight, ChevronLeft, ChevronRight, MousePointer2 } from 'lucide-react';
 import FlatRail from './FlatRail';
 import type { Product } from '@/lib/products';
-import { formatPrice } from '@/lib/money';
+import { useI18n } from '@/lib/i18n/client';
 import { storeConfig } from '@/store.config';
 
 /*
@@ -33,6 +33,8 @@ export default function RailShowcase({ products, onOpen }: { products: Product[]
     [products],
   );
   const [activeId, setActiveId] = useState<string | null>(null);
+  const { t, tr, lang, name, price } = useI18n();
+  const title = showcase.title[lang];
   const currentId = activeId ?? featuredId ?? null;
   const index = Math.max(0, products.findIndex(p => p.id === currentId));
   const current = products[index];
@@ -48,18 +50,18 @@ export default function RailShowcase({ products, onOpen }: { products: Product[]
 
       <header className="showcase-head">
         <p className="showcase-eyebrow">
-          {showcase.eyebrow.map((t, i) => <span key={t}>{i > 0 && <i />}{t}</span>)}
+          {showcase.eyebrow.map((e, i) => <span key={e.en}>{i > 0 && <i />}{tr(e)}</span>)}
         </p>
         <h2 id="showcase-title">
-          {showcase.title[0]} <em>{showcase.title[1]}</em> {showcase.title[2]}
+          {title[0] && <>{title[0]} </>}<em>{title[1]}</em>{title[2] && <> {title[2]}</>}
         </h2>
         <div className="showcase-ornament" aria-hidden="true"><span /><b>✦</b><span /></div>
-        <p className="showcase-sub">{showcase.subtitle}</p>
-        <p className="showcase-steps">{showcase.steps.join(' · ')}</p>
+        <p className="showcase-sub">{tr(showcase.subtitle)}</p>
+        <p className="showcase-steps">{showcase.steps.map(tr).join(' · ')}</p>
       </header>
 
-      <div className="showcase-stage">
-        <button className="showcase-arrow is-prev" onClick={() => step(-1)} aria-label="Previous piece"><ChevronLeft size={18} strokeWidth={1.6} /></button>
+      <div className="showcase-stage" dir="ltr">
+        <button className="showcase-arrow is-prev" onClick={() => step(-1)} aria-label={t.rail.prev}><ChevronLeft size={18} strokeWidth={1.6} /></button>
         <FlatRail
           products={products}
           onOpen={onOpen}
@@ -70,7 +72,7 @@ export default function RailShowcase({ products, onOpen }: { products: Product[]
           showLabels={false}
           showHint={false}
         />
-        <button className="showcase-arrow is-next" onClick={() => step(1)} aria-label="Next piece"><ChevronRight size={18} strokeWidth={1.6} /></button>
+        <button className="showcase-arrow is-next" onClick={() => step(1)} aria-label={t.rail.next}><ChevronRight size={18} strokeWidth={1.6} /></button>
       </div>
 
       <div className="showcase-caption" aria-live="polite">
@@ -78,28 +80,28 @@ export default function RailShowcase({ products, onOpen }: { products: Product[]
           {current && (
             <motion.div key={current.id} className="showcase-caption-inner"
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
-              <h3>{current.name}</h3>
-              <p>{formatPrice(current.price)}</p>
+              <h3>{name(current)}</h3>
+              <p>{price(current.price)}</p>
             </motion.div>
           )}
         </AnimatePresence>
         <div className="hero-ctas">
-          {current && <button className="btn-primary" onClick={() => onOpen(current)}>Shop this piece <ArrowRight size={15} /></button>}
-          <a className="btn-outline" href="#collection">Shop the collection <ArrowDown size={15} /></a>
+          {current && <button className="btn-primary" onClick={() => onOpen(current)}>{t.cta.shopPiece} <ArrowRight size={15} className="dir-icon" /></button>}
+          <a className="btn-outline" href="#collection">{t.cta.shopCollection} <ArrowDown size={15} /></a>
         </div>
-        <div className="rail3d-dots showcase-dots" role="tablist" aria-label="Pieces on the rail">
+        <div className="rail3d-dots showcase-dots" role="tablist" dir="ltr" aria-label={t.rail.piecesOnRail}>
           {products.map((p, i) => (
-            <button key={p.id} role="tab" aria-selected={i === index} aria-label={p.name} className={i === index ? 'is-active' : ''} onClick={() => setActiveId(p.id)} />
+            <button key={p.id} role="tab" aria-selected={i === index} aria-label={name(p)} className={i === index ? 'is-active' : ''} onClick={() => setActiveId(p.id)} />
           ))}
         </div>
-        <p className="showcase-hint"><span /> <MousePointer2 size={14} strokeWidth={1.5} /> <b className="hint-fine">Hover or drag the rail to explore</b><b className="hint-touch">Swipe the rail · tap to open</b> <span /></p>
+        <p className="showcase-hint"><span /> <MousePointer2 size={14} strokeWidth={1.5} /> <b className="hint-fine">{t.showcase.hintFine}</b><b className="hint-touch">{t.showcase.hintTouch}</b> <span /></p>
       </div>
 
-      <nav className="showcase-cats" aria-label="Shop by category">
+      <nav className="showcase-cats" aria-label={t.showcase.categories}>
         {showcase.categories.map(c => (
-          <a key={c.label} href={c.href}>
+          <a key={c.label.en} href={c.href}>
             <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">{ICONS[c.icon]}</svg>
-            <span><strong>{c.label}</strong><em>{c.note}</em></span>
+            <span><strong>{tr(c.label)}</strong><em>{tr(c.note)}</em></span>
           </a>
         ))}
       </nav>

@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 
 import { THEME_KEY, type Theme } from '@/lib/theme';
+import { useI18n } from '@/lib/i18n/client';
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('light');
+  const { t } = useI18n();
 
   useEffect(() => {
     setTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
@@ -30,7 +32,7 @@ export default function ThemeToggle() {
   const dark = theme === 'dark';
   return (
     <button className="theme-toggle" onClick={() => apply(dark ? 'light' : 'dark')}
-      aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} title={dark ? 'Light mode' : 'Dark mode'}>
+      aria-label={dark ? t.theme.toLight : t.theme.toDark} title={dark ? t.theme.light : t.theme.dark}>
       {dark ? <Sun size={18} strokeWidth={1.6} /> : <Moon size={18} strokeWidth={1.6} />}
     </button>
   );

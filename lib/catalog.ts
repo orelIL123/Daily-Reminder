@@ -39,6 +39,7 @@ export async function getCatalog(): Promise<{ products: Product[]; source: 'supa
       name: r.name_he,
       nameEn: r.name_en,
       category: r.category?.name_en ?? '',
+      categoryHe: r.category?.name_he,
       price: Number(r.price),
       compareAtPrice: r.compare_at_price == null ? undefined : Number(r.compare_at_price),
       frontImage: img('front') ?? '',

@@ -10,43 +10,38 @@ type Body = {
   locale?: string;
 };
 
-// Database error codes → messages the shopper can act on
-const MESSAGES: Record<string, string> = {
-  invalid_email: 'Please check your email address.',
-  missing_contact: 'Please fill in your name and phone.',
-  empty_cart: 'Your bag is empty.',
-  invalid_quantity: 'One of the quantities is not valid.',
-  invalid_discount: 'That discount code is not valid.',
-  unavailable: 'One of the items is no longer available.',
-  out_of_stock: 'Sorry — one of the sizes in your bag just sold out.',
-};
+const KNOWN = new Set(['invalid_email', 'missing_contact', 'empty_cart', 'invalid_quantity', 'invalid_discount', 'unavailable', 'out_of_stock']);
+// The page shows the message in the shopper's language; the API only returns a code.
+const fail = (code: string, status: number) => NextResponse.json({ code }, { status });
 
 export async function POST(req: Request) {
   const db = supabaseAdmin();
   if (!db) {
-    return NextResponse.json({ error: 'Checkout is not configured yet (SUPABASE_SECRET_KEY is missing).' }, { status: 503 });
+    console.error('[checkout] SUPABASE_SECRET_KEY is missing');
+    return fail('not_configured', 503);
   }
 
   let body: Body;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid request' }, { status: 400 }); }
+  try { body = await req.json(); } catch { return fail('generic', 400); }
+  const locale = body.locale === 'en' ? 'en' : 'he';
   const c = body.customer ?? {};
   for (const k of ['name', 'email', 'phone', 'address', 'city'] as const) {
-    if (!String(c[k] ?? '').trim()) return NextResponse.json({ error: 'Please fill in all required fields.' }, { status: 400 });
+    if (!String(c[k] ?? '').trim()) return fail('missing_fields', 400);
   }
   const lines = (body.lines ?? []).filter(l => l && l.productId && l.size);
-  if (!lines.length) return NextResponse.json({ error: MESSAGES.empty_cart }, { status: 400 });
+  if (!lines.length) return fail('empty_cart', 400);
 
   // Resolve cart lines (product + size + color) to variant ids. Prices are never taken from the browser.
   const { data: variants, error: vErr } = await db
     .from('product_variants')
     .select('id, product_id, size, color')
     .in('product_id', Array.from(new Set(lines.map(l => l.productId))));
-  if (vErr) return NextResponse.json({ error: 'Could not load the catalogue. Please try again.' }, { status: 502 });
+  if (vErr) return fail('catalogue', 502);
 
   const items = [];
   for (const l of lines) {
     const v = variants?.find(x => x.product_id === l.productId && x.size === l.size && x.color === l.color);
-    if (!v) return NextResponse.json({ error: MESSAGES.unavailable }, { status: 409 });
+    if (!v) return fail('unavailable', 409);
     items.push({ variant_id: v.id, quantity: Math.floor(Number(l.qty)) });
   }
 
@@ -55,7 +50,7 @@ export async function POST(req: Request) {
       email: c.email, name: c.name, phone: c.phone,
       address: { street: c.address, city: c.city, zip: c.zip ?? '' },
       note: c.note ?? '',
-      locale: body.locale === 'en' ? 'en' : 'he',
+      locale,
       marketing_opt_in: c.newsletter === true || c.newsletter === 'on',
       shipping_price: storeConfig.commerce.shippingPrice,
       free_shipping_from: storeConfig.commerce.freeShippingFrom,
@@ -64,16 +59,18 @@ export async function POST(req: Request) {
   });
   if (error) {
     const code = (error.message || '').split(':')[0];
-    return NextResponse.json({ error: MESSAGES[code] ?? 'Something went wrong placing the order.' }, { status: code ? 409 : 500 });
+    if (!KNOWN.has(code)) console.error('[checkout] place_order failed:', error.message);
+    return fail(KNOWN.has(code) ? code : 'generic', KNOWN.has(code) ? 409 : 500);
   }
 
   try {
     const session = await createPaymentSession({
       orderId: order.order_id, orderNumber: order.order_number, total: Number(order.total), currency: order.currency,
       email: String(c.email), name: String(c.name), phone: String(c.phone),
-    }, new URL(req.url).origin);
+    }, new URL(req.url).origin, locale);
     return NextResponse.json({ redirectUrl: session.redirectUrl, orderNumber: order.order_number });
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 501 });
+    console.error('[checkout] payment session failed:', (e as Error).message);
+    return fail('generic', 501);
   }
 }

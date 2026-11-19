@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 import type { Product } from '@/lib/products';
-import { formatPrice } from '@/lib/money';
+import { useI18n } from '@/lib/i18n/client';
 import { useCart } from '@/lib/cart';
 import { storeConfig } from '@/store.config';
 import { stockFor } from '@/lib/useProducts';
@@ -14,6 +14,7 @@ import { stockFor } from '@/lib/useProducts';
  */
 export default function ProductSheet({ product, onClose }: { product: Product | null; onClose: () => void }) {
   const cart = useCart();
+  const { t, tr, name, price, color: colorName } = useI18n();
   const [size, setSize] = useState('');
   const [color, setColor] = useState('');
   const [view, setView] = useState<'front' | 'back'>('front');
@@ -43,11 +44,11 @@ export default function ProductSheet({ product, onClose }: { product: Product | 
       {product && (
         <motion.div
           className="focus"
-          role="dialog" aria-modal="true" aria-label={product.name}
+          role="dialog" aria-modal="true" aria-label={name(product)}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
           onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
         >
-          <button className="focus-close" aria-label="Close" onClick={onClose}><X size={20} /></button>
+          <button className="focus-close" aria-label={t.product.close} onClick={onClose}><X size={20} /></button>
 
           <motion.div
             className="focus-card"
@@ -58,13 +59,13 @@ export default function ProductSheet({ product, onClose }: { product: Product | 
           >
             <div className="focus-visual">
               <motion.img
-                className="focus-img" src={product.frontImage} alt={`${product.name} — front`}
+                className="focus-img" src={product.frontImage} alt={t.product.frontAlt(name(product))}
                 initial={false}
                 animate={{ opacity: view === 'front' ? 1 : 0, rotateY: view === 'front' ? 0 : -70 }}
                 transition={{ type: 'spring', stiffness: 130, damping: 20 }}
               />
               <motion.img
-                className={`focus-img ${mirrored ? 'is-mirrored' : ''}`} src={back} alt={`${product.name} — back`}
+                className={`focus-img ${mirrored ? 'is-mirrored' : ''}`} src={back} alt={t.product.backAlt(name(product))}
                 initial={false}
                 animate={{ opacity: view === 'back' ? 1 : 0, rotateY: view === 'back' ? 0 : 70 }}
                 transition={{ type: 'spring', stiffness: 130, damping: 20 }}
@@ -72,44 +73,44 @@ export default function ProductSheet({ product, onClose }: { product: Product | 
             </div>
 
             <div className="focus-info">
-              <h2>{product.name}</h2>
-              <p className="focus-price">{formatPrice(product.price)}</p>
+              <h2>{name(product)}</h2>
+              <p className="focus-price">{price(product.price)}</p>
 
-              <div className="seg" role="tablist" aria-label="View">
+              <div className="seg" role="tablist" aria-label={t.product.view}>
                 <motion.span className="seg-pill" layout transition={{ type: 'spring', stiffness: 400, damping: 34 }}
-                  style={{ left: view === 'front' ? 3 : '50%' }} />
-                <button role="tab" aria-selected={view === 'front'} className={view === 'front' ? 'is-on' : ''} onClick={() => setView('front')}>Front</button>
-                <button role="tab" aria-selected={view === 'back'} className={view === 'back' ? 'is-on' : ''} onClick={() => setView('back')}>Back</button>
+                  style={{ insetInlineStart: view === 'front' ? 3 : '50%' }} />
+                <button role="tab" aria-selected={view === 'front'} className={view === 'front' ? 'is-on' : ''} onClick={() => setView('front')}>{t.product.front}</button>
+                <button role="tab" aria-selected={view === 'back'} className={view === 'back' ? 'is-on' : ''} onClick={() => setView('back')}>{t.product.back}</button>
               </div>
 
               {product.colors.length > 1 && (
-                <div className="color-pills" role="radiogroup" aria-label="Color">
+                <div className="color-pills" role="radiogroup" aria-label={t.product.color}>
                   {product.colors.map(c => (
                     <button key={c} role="radio" aria-checked={c === color} className={c === color ? 'is-on' : ''}
-                      onClick={() => { setColor(c); setSize(''); }}>{c}</button>
+                      onClick={() => { setColor(c); setSize(''); }}>{colorName(c)}</button>
                   ))}
                 </div>
               )}
 
-              <div className="size-pills" role="radiogroup" aria-label="Size">
+              <div className="size-pills" role="radiogroup" aria-label={t.product.size}>
                 {product.sizes.map(s => {
                   const left = stockFor(product, s, color);
                   const soldOut = left === 0;
                   return (
                     <button key={s} role="radio" aria-checked={s === size} disabled={soldOut}
-                      aria-label={soldOut ? `${s} — sold out` : s}
+                      aria-label={soldOut ? t.product.soldOutSize(s) : s}
                       className={`${s === size ? 'is-on' : ''} ${soldOut ? 'is-out' : ''}`} onClick={() => setSize(s)}>{s}</button>
                   );
                 })}
               </div>
               {size && (() => { const left = stockFor(product, size, color); return left !== null && left > 0 && left <= 3
-                ? <p className="focus-low">Only {left} left in {size}</p> : null; })()}
-              {product.variants && product.variants.every(v => v.stock === 0) && <p className="focus-low">Sold out</p>}
+                ? <p className="focus-low">{t.product.onlyLeft(left, size)}</p> : null; })()}
+              {product.variants && product.variants.every(v => v.stock === 0) && <p className="focus-low">{t.product.soldOut}</p>}
 
               <button className={`focus-cta ${size ? 'is-ready' : ''} ${added ? 'is-added' : ''}`} disabled={!size || added} onClick={addToBag}>
-                {added ? <><Check size={16} /> Added</> : size ? `Add to bag — ${formatPrice(product.price)}` : 'Select a size'}
+                {added ? <><Check size={16} /> {t.product.added}</> : size ? t.product.addToBag(price(product.price)) : t.product.selectSize}
               </button>
-              <p className="focus-note">{storeConfig.commerce.perks.join(' · ')}</p>
+              <p className="focus-note">{storeConfig.commerce.perks.map(tr).join(' · ')}</p>
             </div>
           </motion.div>
         </motion.div>

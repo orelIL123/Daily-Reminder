@@ -560,3 +560,55 @@ html[data-theme='dark'] .success p { color: var(--sub); }
 .checkout-form h1 { font-weight: 500; font-size: 38px; letter-spacing: 0; }
 .success h1 { font-weight: 500; font-size: 56px; letter-spacing: 0; }
 .fr-label strong { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
+
+/* ─────────────────────────────────────────────────────────────
+   Hebrew / right-to-left
+   The rails themselves stay dir="ltr" so dragging and swinging stay physical;
+   everything around them mirrors.
+   ───────────────────────────────────────────────────────────── */
+[dir="rtl"] {
+  --font-body: 'Heebo', 'Jost', system-ui, -apple-system, sans-serif;
+  --font-display: 'Frank Ruhl Libre', 'Cormorant Garamond', Georgia, serif;
+}
+[dir="rtl"] .dir-icon { transform: scaleX(-1); }
+
+/* Hebrew has no capitals: wide tracking made for uppercase Latin just looks gappy */
+[lang="he"] .hero-eyebrow, [lang="he"] .nav-links, [lang="he"] .eyebrow-sm, [lang="he"] .showcase-eyebrow,
+[lang="he"] .showcase-steps, [lang="he"] .seg button, [lang="he"] .focus-cta, [lang="he"] .focus-info h2,
+[lang="he"] .checkout-form legend, [lang="he"] .fr-badge, [lang="he"] .hero-caption-inner span,
+[lang="he"] .showcase-hint b, [lang="he"] .btn-primary, [lang="he"] .btn-outline {
+  letter-spacing: .02em;
+}
+[lang="he"] .hero-eyebrow, [lang="he"] .showcase-eyebrow { font-size: 12px; font-weight: 500; }
+[lang="he"] .nav-links { font-size: 14px; }
+[lang="he"] .focus-info h2 { font-size: 21px; font-weight: 700; }
+[lang="he"] .hero-caption-inner h1, [lang="he"] .showcase-caption-inner h3 { letter-spacing: 0; }
+[lang="he"] .showcase-sub { font-style: normal; }
+[lang="he"] .showcase-head h2 em { font-style: normal; }
+
+[dir="rtl"] .bag-count { right: auto; left: 0; }
+[dir="rtl"] .hero-side-copy { right: auto; left: clamp(18px, 4vw, 56px); text-align: left; }
+[dir="rtl"] .card { text-align: right; }
+[dir="rtl"] .focus-close { right: auto; left: 18px; }
+[dir="rtl"] .drawer { right: auto; left: 0; box-shadow: 30px 0 60px -30px rgba(0,0,0,.3); }
+[dir="rtl"] .thumb span { right: auto; left: -6px; }
+[dir="rtl"] .showcase-cats a + a { border-left: 0; border-right: 1px solid var(--sc-glass-line); }
+[dir="rtl"] .showcase-cats span { text-align: right; }
+[dir="rtl"] .brand span { margin-left: 0; }
+
+.lang-switch { width: auto !important; min-width: 36px; padding: 0 8px; border-radius: 999px !important; font-size: 12px; font-weight: 600; letter-spacing: .04em; font-family: 'Heebo', 'Jost', sans-serif; }
+@media (max-width: 860px) { [dir="rtl"] .showcase-cats a:nth-child(3) { border-right: 0; } }
+
+/* mobile header: five actions must fit next to the brand */
+@media (max-width: 600px) {
+  .site-header { gap: 10px; }
+  .brand { font-size: 15px; }
+  .header-actions { gap: 2px; }
+  .header-actions .search-btn { display: none; }
+  .secure { font-size: 0; gap: 0; }
+  .secure svg { width: 16px; height: 16px; }
+}
+@media (max-width: 860px) {
+  [dir="rtl"] .hero-side-copy { left: auto; text-align: center; }
+}
+.secure { white-space: nowrap; }

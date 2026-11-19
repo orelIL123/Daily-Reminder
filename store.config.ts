@@ -8,18 +8,20 @@
 
 export type RailFinish = 'silver' | 'gold' | 'black' | 'brass' | 'white';
 export type GarmentView = 'front' | 'side' | 'back';
+/** Store copy in both site languages. Hebrew is the main language. */
+export type L = { he: string; en: string };
 
 export const storeConfig = {
   brand: {
     name: 'Daily Reminder',
     accentDot: true, // the small coloured "." after the name
-    tagline: 'Premium streetwear. Explore the collection on the rail.',
-    footerNote: 'Considered essentials, made to move with you. Designed in Tel Aviv.',
+    tagline: { he: 'סטריטוור פרימיום. גלו את הקולקציה על המתלה.', en: 'Premium streetwear. Explore the collection on the rail.' } as L,
+    footerNote: { he: 'בגדי יסוד שנבחרו בקפידה, ונעים איתך לאורך היום. מעוצב בתל אביב.', en: 'Considered essentials, made to move with you. Designed in Tel Aviv.' } as L,
   },
 
   hero: {
-    eyebrow: ['New collection', 'Premium streetwear'],
-    sideCopy: ['Crafted in heavyweight fleece.', 'Cut oversized. Made to last.'],
+    eyebrow: [{ he: 'קולקציה חדשה', en: 'New collection' }, { he: 'סטריטוור פרימיום', en: 'Premium streetwear' }] as L[],
+    sideCopy: [{ he: 'כותנה כבדה ואיכותית.', en: 'Crafted in heavyweight fleece.' }, { he: 'גזרה אוברסייז. נבנה להחזיק.', en: 'Cut oversized. Made to last.' }] as L[],
     /** Background behind the rail. Image paths in /public, or null for the soft gradient. */
     background: { desktop: '/hero-bg.webp', mobile: '/hero-bg-mobile.webp' } as { desktop: string; mobile: string } | null,
     /** Dark-mode background behind the rail (falls back to a dark gradient if the file is missing). */
@@ -28,19 +30,19 @@ export const storeConfig = {
 
   /** Section 2 — "The Straight Rail" showcase. */
   showcase: {
-    eyebrow: ['New collection', 'Premium streetwear'],
+    eyebrow: [{ he: 'קולקציה חדשה', en: 'New collection' }, { he: 'סטריטוור פרימיום', en: 'Premium streetwear' }] as L[],
     /** Rendered as: title[0] <em>title[1]</em> title[2] */
-    title: ['The', 'Straight', 'Rail'],
-    subtitle: 'A fluid gallery for everyday essentials.',
-    steps: ['Explore', 'Hover', 'Select', 'Shop'],
+    title: { he: ['', 'המתלה', 'הישר'], en: ['The', 'Straight', 'Rail'] },
+    subtitle: { he: 'גלריה זורמת לבגדי היום־יום.', en: 'A fluid gallery for everyday essentials.' } as L,
+    steps: [{ he: 'גלו', en: 'Explore' }, { he: 'רחפו', en: 'Hover' }, { he: 'בחרו', en: 'Select' }, { he: 'קנו', en: 'Shop' }] as L[],
     /** Product shown front-facing (with the "Featured" badge) when the section loads. null = the middle piece. */
     featuredId: null as string | null,
     background: { light: '/dr-showcase-bg-light.webp', dark: '/dr-dark-bg.webp' } as { light: string; dark: string } | null,
     categories: [
-      { label: 'T-Shirts', note: 'Premium everyday tees', icon: 'tee', href: '#collection' },
-      { label: 'Hoodies', note: 'Elevated comfort', icon: 'hoodie', href: '#collection' },
-      { label: 'Jackets', note: 'Versatile outerwear', icon: 'jacket', href: '#collection' },
-      { label: 'Accessories', note: 'Complete the look', icon: 'cap', href: '#collection' },
+      { label: { he: 'טישרטים', en: 'T-Shirts' }, note: { he: 'חולצות יום־יום ברמה אחרת', en: 'Premium everyday tees' }, icon: 'tee', href: '#collection' },
+      { label: { he: 'קפוצ׳ונים', en: 'Hoodies' }, note: { he: 'נוחות ברמה גבוהה', en: 'Elevated comfort' }, icon: 'hoodie', href: '#collection' },
+      { label: { he: 'ז׳קטים', en: 'Jackets' }, note: { he: 'שכבה עליונה לכל מצב', en: 'Versatile outerwear' }, icon: 'jacket', href: '#collection' },
+      { label: { he: 'אקססוריז', en: 'Accessories' }, note: { he: 'משלימים את הלוק', en: 'Complete the look' }, icon: 'cap', href: '#collection' },
     ],
   },
 
@@ -58,10 +60,11 @@ export const storeConfig = {
 
   commerce: {
     currency: 'ILS',
-    locale: 'en-IL',
+    /** Number formatting per site language. */
+    locales: { he: 'he-IL', en: 'en-IL' },
     freeShippingFrom: 350,
     shippingPrice: 35,
-    perks: ['Free shipping over ₪350', '14-day returns'],
+    perks: [{ he: 'משלוח חינם מעל ₪350', en: 'Free shipping over ₪350' }, { he: 'החזרה תוך 14 יום', en: '14-day returns' }] as L[],
   },
 };
 

@@ -5,6 +5,7 @@ export type Product = {
   slug?: string;
   nameEn?: string;
   descriptionEn?: string;
+  categoryHe?: string;
   compareAtPrice?: number;
   /** Present when the catalogue comes from Supabase: real stock per size × color. */
   variants?: Variant[];
@@ -23,7 +24,7 @@ export type Product = {
 };
 
 export const initialProducts: Product[] = [
-  { id: 'aba-01', name: 'ישתבח — חולצת ציצית', category: 'Tzitzit Tee', price: 249, frontImage: '/products/tee-front.webp', sideImage: '/products/tee-side.webp', backImage: '/products/tee-back.webp', quickSize: 'L', description: 'חולצת ציצית אוברסייז מכותנה כבדה, עם ציציות חבוקות בצדדים והדפס "ישתבח שמו לעד". Oversized heavyweight cotton tee with side tassels and the "Yishtabach Shemo La\'ad" print.', colors: ['White'], sizes: ['S','M','L','XL','XXL'] },
+  { id: 'aba-01', name: 'ישתבח — חולצת ציצית', nameEn: 'Yishtabach — Tzitzit Tee', category: 'Tzitzit Tee', categoryHe: 'חולצות ציצית', price: 249, frontImage: '/products/tee-front.webp', sideImage: '/products/tee-side.webp', backImage: '/products/tee-back.webp', quickSize: 'L', description: 'חולצת ציצית אוברסייז מכותנה כבדה, עם ציציות חבוקות בצדדים והדפס "ישתבח שמו לעד".', descriptionEn: 'Oversized heavyweight cotton tee with side tassels and the "Yishtabach Shemo La\'ad" print.', colors: ['White'], sizes: ['S','M','L','XL','XXL'] },
   { id: '01', name: 'Essential Zip Jacket', category: 'Outerwear', price: 449, frontImage: '/products/jacket-charcoal.svg', sideImage: '/products/jacket-charcoal-side.svg', description: 'Everyday layering, reimagined. A relaxed silhouette with minimal hardware.', colors: ['Charcoal', 'Black'], sizes: ['S','M','L','XL'] },
   { id: '02', name: 'Nightfall Hoodie', category: 'Essentials', price: 379, frontImage: '/products/hoodie-navy.svg', sideImage: '/products/hoodie-navy-side.svg', description: 'A heavyweight cotton-blend hoodie designed to be worn on repeat.', colors: ['Navy', 'Cream'], sizes: ['S','M','L','XL'] },
   { id: '03', name: 'Studio Crew', category: 'Sweatshirts', price: 329, frontImage: '/products/sweat-gray.svg', sideImage: '/products/sweat-gray-side.svg', description: 'The understated everyday crewneck, with a contemporary drop shoulder.', colors: ['Stone', 'Ash'], sizes: ['XS','S','M','L','XL'] },

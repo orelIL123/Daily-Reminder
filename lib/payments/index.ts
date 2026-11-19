@@ -1,4 +1,5 @@
 import 'server-only';
+import { localePath, type Locale } from '@/lib/i18n/config';
 
 /*
  * Payment provider adapter.
@@ -16,11 +17,11 @@ import 'server-only';
 export type PaymentRequest = { orderId: string; orderNumber: number; total: number; currency: string; email: string; name: string; phone: string };
 export type PaymentSession = { redirectUrl: string };
 
-export async function createPaymentSession(req: PaymentRequest, origin: string): Promise<PaymentSession> {
+export async function createPaymentSession(req: PaymentRequest, origin: string, locale: Locale = 'he'): Promise<PaymentSession> {
   const provider = process.env.PAYMENT_PROVIDER ?? 'demo';
   switch (provider) {
     case 'demo':
-      return { redirectUrl: `${origin}/checkout/success?order=${req.orderNumber}&demo=1` };
+      return { redirectUrl: `${origin}${localePath(locale, '/checkout/success')}?order=${req.orderNumber}&demo=1` };
     // case 'hyp': return hyp.createSession(req, origin);
     default:
       throw new Error(`Payment provider "${provider}" is not configured yet`);

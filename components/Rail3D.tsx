@@ -7,7 +7,7 @@ import {
 } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import type { Product } from '@/lib/products';
-import { formatPrice } from '@/lib/money';
+import { useI18n } from '@/lib/i18n/client';
 import { viewSequence } from '@/lib/views';
 import { storeConfig } from '@/store.config';
 
@@ -58,6 +58,7 @@ export default function Rail3D({ products, onActiveChange, onOpen }: Props) {
   const P = products.length;
   const S = P === 0 ? 0 : P * Math.max(1, Math.ceil(MIN_SLOTS / P));
   const reduceMotion = useReducedMotion();
+  const { t, name } = useI18n();
 
   const [geo, setGeo] = useState<Geo>(() => geoFor(1440));
   useEffect(() => {
@@ -197,19 +198,19 @@ export default function Rail3D({ products, onActiveChange, onOpen }: Props) {
   const cur = products[activeProduct];
   const curTurns = viewsOf(cur).length - 1;
   const hint = stage === 0
-    ? 'Drag the rail · tap a piece to turn it'
-    : stage < curTurns ? 'Tap again to see the back'
-    : 'Tap again to choose a size';
+    ? t.rail.hintStart
+    : stage < curTurns ? t.rail.hintBack
+    : t.rail.hintOpen;
   const gh = geo.gw * IMAGE_RATIO;
 
   return (
-    <div className="rail3d">
+    <div className="rail3d" dir="ltr">
       <div
         className="rail3d-stage"
         style={{ perspective: geo.perspective, height: gh + 70 }}
         role="region"
         aria-roledescription="carousel"
-        aria-label="Clothing rail — drag or use arrow keys"
+        aria-label={t.rail.region}
         tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -245,24 +246,24 @@ export default function Rail3D({ products, onActiveChange, onOpen }: Props) {
       </div>
 
       <div className="rail3d-footer">
-        <p className="rail3d-hint">
+        <p className="rail3d-hint" dir="auto">
           {hint}
         </p>
         <div className="rail3d-nav">
-          <button aria-label="Previous piece" onClick={() => step(-1)}><ArrowLeft size={16} /></button>
-          <div className="rail3d-dots" role="tablist" aria-label="Choose a piece">
+          <button aria-label={t.rail.prev} onClick={() => step(-1)}><ArrowLeft size={16} /></button>
+          <div className="rail3d-dots" role="tablist" aria-label={t.rail.choose}>
             {products.map((p, i) => (
               <button
                 key={p.id}
                 role="tab"
                 aria-selected={i === activeProduct}
-                aria-label={p.name}
+                aria-label={name(p)}
                 className={i === activeProduct ? 'is-active' : ''}
                 onClick={() => goToProduct(i)}
               />
             ))}
           </div>
-          <button aria-label="Next piece" onClick={() => step(1)}><ArrowRight size={16} /></button>
+          <button aria-label={t.rail.next} onClick={() => step(1)}><ArrowRight size={16} /></button>
         </div>
       </div>
     </div>
@@ -286,6 +287,8 @@ function Garment({ slot, slots, product, geo, gh, offset, swing, isActive, stage
   const k = 0.8 + ((slot * 37) % 10) / 22;
   const pieceSwing = useTransform(swing, s => s * k);
   const views = viewsOf(product);
+  const { t, name, price } = useI18n();
+  const label = name(product);
 
   return (
     <motion.div
@@ -300,7 +303,7 @@ function Garment({ slot, slots, product, geo, gh, offset, swing, isActive, stage
           whileHover={canHover ? { scale: 1.045 } : undefined}
           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
           onClick={() => onTap(slot)}
-          aria-label={isActive ? `${product.name} — tap to continue` : `Bring ${product.name} to the front`}
+          aria-label={isActive ? t.rail.tapContinue(label) : t.rail.bringFront(label)}
           tabIndex={isActive ? 0 : -1}
         >
           <span className="g3d-glow" aria-hidden="true" />
@@ -309,7 +312,7 @@ function Garment({ slot, slots, product, geo, gh, offset, swing, isActive, stage
               key={src}
               className="g3d-face g3d-flat"
               src={src}
-              alt={i === 0 && isActive ? product.name : ''}
+              alt={i === 0 && isActive ? label : ''}
               draggable={false}
               initial={false}
               animate={{ opacity: stage === i ? 1 : 0, rotateY: stage === i ? 0 : i > stage ? -65 : 65, scale: stage === i ? 1 : 0.94 }}
@@ -319,7 +322,7 @@ function Garment({ slot, slots, product, geo, gh, offset, swing, isActive, stage
         </motion.button>
         {storeConfig.rail.showPriceTags && (
           <motion.span className="g3d-tag" style={{ opacity }} aria-hidden="true">
-            <i />{formatPrice(product.price)}
+            <i />{price(product.price)}
           </motion.span>
         )}
       </motion.div>

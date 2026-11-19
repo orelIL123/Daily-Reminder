@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { Product } from '@/lib/products';
-import { formatPrice } from '@/lib/money';
+import { useI18n } from '@/lib/i18n/client';
 import { imageFor } from '@/lib/views';
 import { storeConfig } from '@/store.config';
 
@@ -39,6 +39,7 @@ type Props = {
 
 export default function FlatRail({ products, onOpen, activeId, onActiveChange, persistent = false, featuredId, showLabels = true, showHint = true }: Props) {
   const [dims, setDims] = useState(() => sizes(1440));
+  const { t, name, price } = useI18n();
   const [canHover, setCanHover] = useState(true);
   const [localActive, setLocalActive] = useState<string | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -96,7 +97,7 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
   function endDrag() { drag.current.down = false; window.setTimeout(() => { drag.current.moved = false; }, 0); }
 
   return (
-    <div className="flatrail" onMouseLeave={() => { endDrag(); if (canHover && !persistent) setActive(null); }}>
+    <div className="flatrail" dir="ltr" onMouseLeave={() => { endDrag(); if (canHover && !persistent) setActive(null); }}>
       <div
         ref={trackRef}
         className="flatrail-track"
@@ -121,7 +122,7 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
                 onMouseEnter={() => canHover && !drag.current.down && setActive(p.id)}
                 onFocus={e => { if (canHover || e.currentTarget.matches(':focus-visible')) setActive(p.id); }}
                 onClick={() => tap(p)}
-                aria-label={`${p.name}, ${formatPrice(p.price)}`}
+                aria-label={`${name(p)}, ${price(p.price)}`}
                 aria-current={open ? 'true' : undefined}
               >
                 <span className="fr-hang" style={{ width: dims.gw, height: gh, top: -HOOK_Y * gh }}>
@@ -140,14 +141,14 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
                   />
                   {featuredId === p.id && (
                     <motion.span className="fr-badge" initial={false} animate={{ opacity: open ? 1 : 0, scale: open ? 1 : 0.9 }}>
-                      ★ Featured
+                      ★ {t.rail.featured}
                     </motion.span>
                   )}
                 </span>
                 {showLabels && (
                   <motion.span className="fr-label" initial={false} animate={{ opacity: open ? 1 : 0, y: open ? 0 : 6 }}>
-                    <strong>{p.name}</strong>
-                    <span>{formatPrice(p.price)}</span>
+                    <strong dir="auto">{name(p)}</strong>
+                    <span>{price(p.price)}</span>
                   </motion.span>
                 )}
               </motion.button>
@@ -155,7 +156,7 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
           })}
         </div>
       </div>
-      {showHint && <p className="flatrail-hint">{canHover ? 'Hover a piece to see the front · click to open' : 'Tap a piece to see the front · tap again to open'}</p>}
+      {showHint && <p className="flatrail-hint" dir="auto">{canHover ? t.rail.flatHintFine : t.rail.flatHintTouch}</p>}
     </div>
   );
 }

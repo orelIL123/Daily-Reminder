@@ -24,7 +24,7 @@ const ICONS: Record<string, React.ReactNode> = {
 };
 
 const bgStyle = showcase.background
-  ? ({ ['--sc-bg' as string]: `url('${showcase.background.light}')`, ['--sc-bg-dark' as string]: `url('${showcase.background.dark}')` } as React.CSSProperties)
+  ? ({ ['--sc-bg' as string]: showcase.background.light ? `url('${showcase.background.light}')` : 'none', ['--sc-bg-dark' as string]: `url('${showcase.background.dark}')` } as React.CSSProperties)
   : undefined;
 
 export default function RailShowcase({ products, onOpen }: { products: Product[]; onOpen: (p: Product) => void }) {

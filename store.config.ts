@@ -37,7 +37,8 @@ export const storeConfig = {
     steps: [{ he: 'גלו', en: 'Explore' }, { he: 'רחפו', en: 'Hover' }, { he: 'בחרו', en: 'Select' }, { he: 'קנו', en: 'Shop' }] as L[],
     /** Product shown front-facing (with the "Featured" badge) when the section loads. null = the middle piece. */
     featuredId: null as string | null,
-    background: { light: '/dr-showcase-bg-light.webp', dark: '/dr-dark-bg.webp' } as { light: string; dark: string } | null,
+    /** light: null = plain base colour. Add an image path here to use a photo in light mode. */
+    background: { light: null, dark: '/dr-dark-bg.webp' } as { light: string | null; dark: string } | null,
     categories: [
       { label: { he: 'טישרטים', en: 'T-Shirts' }, note: { he: 'חולצות יום־יום ברמה אחרת', en: 'Premium everyday tees' }, icon: 'tee', href: '#collection' },
       { label: { he: 'קפוצ׳ונים', en: 'Hoodies' }, note: { he: 'נוחות ברמה גבוהה', en: 'Elevated comfort' }, icon: 'hoodie', href: '#collection' },

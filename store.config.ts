@@ -22,6 +22,26 @@ export const storeConfig = {
     sideCopy: ['Crafted in heavyweight fleece.', 'Cut oversized. Made to last.'],
     /** Background behind the rail. Image paths in /public, or null for the soft gradient. */
     background: { desktop: '/hero-bg.webp', mobile: '/hero-bg-mobile.webp' } as { desktop: string; mobile: string } | null,
+    /** Dark-mode background behind the rail (falls back to a dark gradient if the file is missing). */
+    backgroundDark: { desktop: '/dr-dark-bg.webp', mobile: '/dr-dark-bg-mobile.webp' } as { desktop: string; mobile: string } | null,
+  },
+
+  /** Section 2 — "The Straight Rail" showcase. */
+  showcase: {
+    eyebrow: ['New collection', 'Premium streetwear'],
+    /** Rendered as: title[0] <em>title[1]</em> title[2] */
+    title: ['The', 'Straight', 'Rail'],
+    subtitle: 'A fluid gallery for everyday essentials.',
+    steps: ['Explore', 'Hover', 'Select', 'Shop'],
+    /** Product shown front-facing (with the "Featured" badge) when the section loads. null = the middle piece. */
+    featuredId: null as string | null,
+    background: { light: '/dr-showcase-bg-light.webp', dark: '/dr-dark-bg.webp' } as { light: string; dark: string } | null,
+    categories: [
+      { label: 'T-Shirts', note: 'Premium everyday tees', icon: 'tee', href: '#collection' },
+      { label: 'Hoodies', note: 'Elevated comfort', icon: 'hoodie', href: '#collection' },
+      { label: 'Jackets', note: 'Versatile outerwear', icon: 'jacket', href: '#collection' },
+      { label: 'Accessories', note: 'Complete the look', icon: 'cap', href: '#collection' },
+    ],
   },
 
   rail: {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { Product } from '@/lib/products';
 import { formatPrice } from '@/lib/money';
@@ -11,21 +11,42 @@ import { storeConfig } from '@/store.config';
  * Option B — a straight shop rail.
  * Pieces hang packed together, seen from the side. Hover (desktop) or first tap (touch)
  * turns a piece to face you and makes room for it; click / second tap opens it.
+ *
+ * Controlled mode (activeId + onActiveChange + persistent): one piece always faces you,
+ * glows and is marked "Featured" — used by the showcase section.
  */
 
 const IMAGE_RATIO = 455 / 360;
 const HOOK_Y = 0.028;
 
 function sizes(w: number) {
-  if (w < 600) return { slot: 58, open: 168, gw: 150 };
-  if (w < 1000) return { slot: 74, open: 210, gw: 190 };
-  return { slot: 92, open: 262, gw: 236 };
+  if (w < 600) return { slot: 58, open: 176, gw: 158 };
+  if (w < 1000) return { slot: 74, open: 220, gw: 200 };
+  return { slot: 92, open: 282, gw: 254 };
 }
 
-export default function FlatRail({ products, onOpen }: { products: Product[]; onOpen: (p: Product) => void }) {
+type Props = {
+  products: Product[];
+  onOpen: (p: Product) => void;
+  activeId?: string | null;
+  onActiveChange?: (id: string | null) => void;
+  /** Keep the last piece turned to the front when the pointer leaves. */
+  persistent?: boolean;
+  featuredId?: string;
+  showLabels?: boolean;
+  showHint?: boolean;
+};
+
+export default function FlatRail({ products, onOpen, activeId, onActiveChange, persistent = false, featuredId, showLabels = true, showHint = true }: Props) {
   const [dims, setDims] = useState(() => sizes(1440));
   const [canHover, setCanHover] = useState(true);
-  const [active, setActive] = useState<string | null>(null);
+  const [localActive, setLocalActive] = useState<string | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const drag = useRef({ down: false, x: 0, left: 0, moved: false });
+
+  const controlled = activeId !== undefined;
+  const active = controlled ? activeId : localActive;
+  const setActive = (id: string | null) => { if (!controlled) setLocalActive(id); onActiveChange?.(id); };
 
   useEffect(() => {
     const r = () => setDims(sizes(window.innerWidth));
@@ -35,18 +56,55 @@ export default function FlatRail({ products, onOpen }: { products: Product[]; on
     return () => window.removeEventListener('resize', r);
   }, []);
 
+  // keep the active piece in view when it changes from outside (arrows / dots)
+  const firstScroll = useRef(true);
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || !active) return;
+    const instant = firstScroll.current;
+    // wait for the open/close width spring to settle, then centre the piece
+    const t = window.setTimeout(() => {
+      const el = track.querySelector<HTMLElement>(`[data-id="${CSS.escape(active)}"]`);
+      if (!el || track.scrollWidth <= track.clientWidth + 2) return;
+      const target = el.offsetLeft + el.offsetWidth / 2 - track.clientWidth / 2;
+      track.scrollTo({ left: target, behavior: instant ? 'auto' : 'smooth' });
+      firstScroll.current = false;
+    }, instant ? 650 : 160);
+    return () => window.clearTimeout(t);
+  }, [active, dims]);
+
   const gh = dims.gw * IMAGE_RATIO;
 
   function tap(p: Product) {
+    if (drag.current.moved) return;
     if (canHover || active === p.id) onOpen(p);
     else setActive(p.id);
   }
 
+  // desktop: drag the rail sideways
+  function onPointerDown(e: React.PointerEvent) {
+    if (e.pointerType !== 'mouse' || !trackRef.current) return;
+    drag.current = { down: true, x: e.clientX, left: trackRef.current.scrollLeft, moved: false };
+  }
+  function onPointerMove(e: React.PointerEvent) {
+    const d = drag.current;
+    if (!d.down || !trackRef.current) return;
+    const dx = e.clientX - d.x;
+    if (Math.abs(dx) > 5) d.moved = true;
+    if (d.moved) trackRef.current.scrollLeft = d.left - dx;
+  }
+  function endDrag() { drag.current.down = false; window.setTimeout(() => { drag.current.moved = false; }, 0); }
+
   return (
-    <div className="flatrail" onMouseLeave={() => canHover && setActive(null)}>
-      <div className="flatrail-track" style={{ height: gh + 40 }}>
-        <div className="flatrail-bar" aria-hidden="true" />
+    <div className="flatrail" onMouseLeave={() => { endDrag(); if (canHover && !persistent) setActive(null); }}>
+      <div
+        ref={trackRef}
+        className="flatrail-track"
+        style={{ height: gh + (showLabels ? 40 : 24) }}
+        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag}
+      >
         <div className="flatrail-items">
+          <div className="flatrail-bar" aria-hidden="true"><i /><i /></div>
           {products.map(p => {
             const open = active === p.id;
             const side = imageFor(p, storeConfig.rail.straightRestView);
@@ -54,17 +112,20 @@ export default function FlatRail({ products, onOpen }: { products: Product[]; on
             return (
               <motion.button
                 key={p.id}
+                data-id={p.id}
                 type="button"
                 className={`fr-item ${open ? 'is-open' : ''}`}
                 animate={{ width: open ? dims.open : dims.slot }}
                 transition={{ type: 'spring', stiffness: 220, damping: 26 }}
                 style={{ height: gh, zIndex: open ? 5 : 1 }}
-                onMouseEnter={() => canHover && setActive(p.id)}
-                onFocus={e => { if (canHover || e.currentTarget.matches(":focus-visible")) setActive(p.id); }}
+                onMouseEnter={() => canHover && !drag.current.down && setActive(p.id)}
+                onFocus={e => { if (canHover || e.currentTarget.matches(':focus-visible')) setActive(p.id); }}
                 onClick={() => tap(p)}
                 aria-label={`${p.name}, ${formatPrice(p.price)}`}
+                aria-current={open ? 'true' : undefined}
               >
                 <span className="fr-hang" style={{ width: dims.gw, height: gh, top: -HOOK_Y * gh }}>
+                  <span className="fr-glow" aria-hidden="true" />
                   <motion.img
                     src={side} alt="" draggable={false} className="fr-img"
                     initial={false}
@@ -72,22 +133,29 @@ export default function FlatRail({ products, onOpen }: { products: Product[]; on
                     transition={{ type: 'spring', stiffness: 160, damping: 22 }}
                   />
                   <motion.img
-                    src={face} alt="" draggable={false} className="fr-img"
+                    src={face} alt="" draggable={false} className="fr-img fr-img-face"
                     initial={false}
                     animate={{ opacity: open ? 1 : 0, rotateY: open ? 0 : -70, scale: open ? 1.04 : 0.96 }}
                     transition={{ type: 'spring', stiffness: 160, damping: 22 }}
                   />
+                  {featuredId === p.id && (
+                    <motion.span className="fr-badge" initial={false} animate={{ opacity: open ? 1 : 0, scale: open ? 1 : 0.9 }}>
+                      ★ Featured
+                    </motion.span>
+                  )}
                 </span>
-                <motion.span className="fr-label" initial={false} animate={{ opacity: open ? 1 : 0, y: open ? 0 : 6 }}>
-                  <strong>{p.name}</strong>
-                  <span>{formatPrice(p.price)}</span>
-                </motion.span>
+                {showLabels && (
+                  <motion.span className="fr-label" initial={false} animate={{ opacity: open ? 1 : 0, y: open ? 0 : 6 }}>
+                    <strong>{p.name}</strong>
+                    <span>{formatPrice(p.price)}</span>
+                  </motion.span>
+                )}
               </motion.button>
             );
           })}
         </div>
       </div>
-      <p className="flatrail-hint">{canHover ? 'Hover a piece to see the front · click to open' : 'Tap a piece to see the front · tap again to open'}</p>
+      {showHint && <p className="flatrail-hint">{canHover ? 'Hover a piece to see the front · click to open' : 'Tap a piece to see the front · tap again to open'}</p>}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import Rail3D from './Rail3D';
 import FlatRail from './FlatRail';
+import RailShowcase from './RailShowcase';
 import ProductSheet from './ProductSheet';
 import { useProducts } from '@/lib/useProducts';
 import { formatPrice } from '@/lib/money';
@@ -13,7 +14,14 @@ import { storeConfig } from '@/store.config';
 
 const { brand, hero, rail } = storeConfig;
 const heroStyle = hero.background
-  ? ({ ['--hero-bg' as string]: `url('${hero.background.desktop}')`, ['--hero-bg-m' as string]: `url('${hero.background.mobile}')` } as React.CSSProperties)
+  ? ({
+      ['--hero-bg' as string]: `url('${hero.background.desktop}')`,
+      ['--hero-bg-m' as string]: `url('${hero.background.mobile}')`,
+      ...(hero.backgroundDark ? {
+        ['--hero-bg-dark' as string]: `url('${hero.backgroundDark.desktop}')`,
+        ['--hero-bg-dark-m' as string]: `url('${hero.backgroundDark.mobile}')`,
+      } : {}),
+    } as React.CSSProperties)
   : undefined;
 
 export default function Storefront() {
@@ -53,13 +61,7 @@ export default function Storefront() {
         <p className="hero-side-copy">{hero.sideCopy.map((l, i) => <span key={i}>{l}<br /></span>)}</p>
       </section>
 
-      {rail.layout === 'both' && <section id="rail-b" className="rail-b">
-        <header className="rail-b-head">
-          <span className="eyebrow-sm">Option B</span>
-          <h2>The straight rail</h2>
-        </header>
-        <FlatRail products={products} onOpen={setOpen} />
-      </section>}
+      {rail.layout === 'both' && <RailShowcase products={products} onOpen={setOpen} />}
 
       <section id="collection" className="collection">
         <header className="section-head">

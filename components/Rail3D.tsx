@@ -8,6 +8,8 @@ import {
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import type { Product } from '@/lib/products';
 import { formatPrice } from '@/lib/money';
+import { viewSequence } from '@/lib/views';
+import { storeConfig } from '@/store.config';
 
 /*
  * A curved, circular clothing rail rendered with CSS 3D.
@@ -44,12 +46,7 @@ const fadeFor = (deg: number) => {
   return 1 - (a - FADE_START) / (FADE_END - FADE_START);
 };
 
-/** Views shown by successive taps: [front, ...turns]. Three views = front → side → back. */
-function viewsOf(p: Product): string[] {
-  if (p.sideImage && p.backImage) return [p.frontImage, p.sideImage, p.backImage];
-  return [p.frontImage, p.backImage || p.sideImage || p.frontImage];
-}
-const isSequence = (p: Product) => viewsOf(p).length === 3;
+const viewsOf = (p: Product) => viewSequence(p, storeConfig.rail.curvedRestView);
 
 type Props = {
   products: Product[];
@@ -289,10 +286,6 @@ function Garment({ slot, slots, product, geo, gh, offset, swing, isActive, stage
   const k = 0.8 + ((slot * 37) % 10) / 22;
   const pieceSwing = useTransform(swing, s => s * k);
   const views = viewsOf(product);
-  const sequence = views.length === 3;
-  const turned = stage > 0;
-  const back = views[1];
-  const mirrored = !product.backImage && !product.sideImage;
 
   return (
     <motion.div
@@ -300,51 +293,35 @@ function Garment({ slot, slots, product, geo, gh, offset, swing, isActive, stage
       style={{ transform, visibility, width: geo.gw, marginLeft: -geo.gw / 2, top: -HOOK_Y * gh }}
     >
       <motion.div className="g3d-swing" style={{ rotateZ: pieceSwing }}>
-        {sequence ? (
-          <motion.button
-            type="button"
-            className="g3d-turn g3d-seq"
-            style={{ height: gh, opacity }}
-            whileHover={canHover ? { scale: 1.045 } : undefined}
-            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-            onClick={() => onTap(slot)}
-            aria-label={isActive ? `${product.name} — tap to continue` : `Bring ${product.name} to the front`}
-            tabIndex={isActive ? 0 : -1}
-          >
-            <span className="g3d-glow" aria-hidden="true" />
-            {views.map((src, i) => (
-              <motion.img
-                key={src}
-                className="g3d-face g3d-flat"
-                src={src}
-                alt={i === 0 && isActive ? product.name : ''}
-                draggable={false}
-                initial={false}
-                animate={{ opacity: stage === i ? 1 : 0, rotateY: stage === i ? 0 : i > stage ? -65 : 65, scale: stage === i ? 1 : 0.94 }}
-                transition={{ type: 'spring', stiffness: 110, damping: 17 }}
-              />
-            ))}
-          </motion.button>
-        ) : (
-          <motion.button
-            type="button"
-            className="g3d-turn"
-            style={{ height: gh }}
-            whileHover={canHover ? { scale: 1.045 } : undefined}
-            animate={{ rotateY: turned ? 180 : 0 }}
-            transition={{ type: 'spring', stiffness: 70, damping: 13 }}
-            onClick={() => onTap(slot)}
-            aria-label={isActive ? (turned ? `Open ${product.name}` : `Turn ${product.name}`) : `Bring ${product.name} to the front`}
-            tabIndex={isActive ? 0 : -1}
-          >
-            <span className="g3d-glow" aria-hidden="true" />
-            <motion.img className="g3d-face" src={product.frontImage} alt={isActive ? product.name : ''} draggable={false} style={{ opacity }} />
-            <motion.img className={`g3d-face g3d-back ${mirrored ? 'is-mirrored' : ''}`} src={back} alt="" draggable={false} style={{ opacity }} />
-          </motion.button>
+        <motion.button
+          type="button"
+          className="g3d-turn g3d-seq"
+          style={{ height: gh, opacity }}
+          whileHover={canHover ? { scale: 1.045 } : undefined}
+          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+          onClick={() => onTap(slot)}
+          aria-label={isActive ? `${product.name} — tap to continue` : `Bring ${product.name} to the front`}
+          tabIndex={isActive ? 0 : -1}
+        >
+          <span className="g3d-glow" aria-hidden="true" />
+          {views.map((src, i) => (
+            <motion.img
+              key={src}
+              className="g3d-face g3d-flat"
+              src={src}
+              alt={i === 0 && isActive ? product.name : ''}
+              draggable={false}
+              initial={false}
+              animate={{ opacity: stage === i ? 1 : 0, rotateY: stage === i ? 0 : i > stage ? -65 : 65, scale: stage === i ? 1 : 0.94 }}
+              transition={{ type: 'spring', stiffness: 110, damping: 17 }}
+            />
+          ))}
+        </motion.button>
+        {storeConfig.rail.showPriceTags && (
+          <motion.span className="g3d-tag" style={{ opacity }} aria-hidden="true">
+            <i />{formatPrice(product.price)}
+          </motion.span>
         )}
-        <motion.span className="g3d-tag" style={{ opacity }} aria-hidden="true">
-          <i />{formatPrice(product.price)}
-        </motion.span>
       </motion.div>
     </motion.div>
   );

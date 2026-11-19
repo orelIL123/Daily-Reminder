@@ -59,8 +59,11 @@ img { display: block; max-width: 100%; }
 /* ---------- hero with the 3D rail ---------- */
 .hero {
   position: relative; padding: clamp(28px, 5vh, 56px) 0 48px; overflow: hidden; isolation: isolate;
-  background: #f4f3f1 url('/hero-bg.webp') center 42% / cover no-repeat;
+  background:
+    radial-gradient(120% 70% at 50% 0%, #f1ebf9 0%, rgba(241,235,249,0) 60%),
+    linear-gradient(180deg, #efe8f7 0%, #f5f2f8 45%, #eaf5ee 100%);
 }
+.hero.has-bg { background: #f4f3f1 var(--hero-bg) center 42% / cover no-repeat; }
 /* soft wash so the header and the text below the rail stay crisp on the photo */
 .hero::before {
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
@@ -69,10 +72,10 @@ img { display: block; max-width: 100%; }
     linear-gradient(0deg, rgba(248,247,245,.55) 0%, rgba(248,247,245,0) 30%);
 }
 @media (max-width: 600px) {
-  .hero { background-image: url('/hero-bg-mobile.webp'); background-position: 50% 30%; }
+  .hero.has-bg { background-image: var(--hero-bg-m); background-position: 50% 30%; }
 }
 .hero-eyebrow { text-align: center; font-size: 10.5px; letter-spacing: .26em; text-transform: uppercase; font-weight: 600; color: #3a3a3e; }
-.hero-eyebrow span { margin: 0 12px; opacity: .35; }
+.hero-eyebrow i { margin: 0 12px; opacity: .35; font-style: normal; }
 
 .rail3d { position: relative; margin-top: clamp(26px, 6vh, 64px); }
 .rail3d-stage {
@@ -87,7 +90,7 @@ img { display: block; max-width: 100%; }
 .rail3d-seg {
   position: absolute; top: -4px; left: 0; height: 8px; border-radius: 4px;
   backface-visibility: visible;
-  background: linear-gradient(180deg, #ffffff 0%, #dcdde2 30%, #a3a6ad 62%, #c9cbd0 82%, #8b8e95 100%);
+  background: var(--rail-finish, linear-gradient(180deg, #ffffff 0%, #dcdde2 30%, #a3a6ad 62%, #c9cbd0 82%, #8b8e95 100%));
 }
 
 .g3d { position: absolute; left: 0; transform-style: preserve-3d; will-change: transform; }
@@ -168,7 +171,7 @@ img { display: block; max-width: 100%; }
 .flatrail { position: relative; }
 .flatrail-track { position: relative; overflow-x: auto; overflow-y: visible; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .flatrail-track::-webkit-scrollbar { display: none; }
-.flatrail-bar { position: absolute; left: 4%; right: 4%; top: 18px; height: 6px; border-radius: 3px; background: linear-gradient(180deg, #fff, #c9cbd0 50%, #9a9da4); box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+.flatrail-bar { position: absolute; left: 4%; right: 4%; top: 18px; height: 6px; border-radius: 3px; background: var(--rail-finish, linear-gradient(180deg, #fff, #c9cbd0 50%, #9a9da4)); box-shadow: 0 2px 6px rgba(0,0,0,.08); }
 .flatrail-items { position: relative; display: flex; justify-content: center; align-items: flex-start; min-width: max-content; padding: 18px 6vw 0; margin: 0 auto; width: fit-content; }
 .fr-item { position: relative; flex: 0 0 auto; display: block; perspective: 900px; cursor: pointer; }
 .fr-hang { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none; }

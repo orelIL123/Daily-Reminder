@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { Product } from '@/lib/products';
 import { formatPrice } from '@/lib/money';
+import { imageFor } from '@/lib/views';
+import { storeConfig } from '@/store.config';
 
 /*
  * Option B — a straight shop rail.
@@ -47,7 +49,8 @@ export default function FlatRail({ products, onOpen }: { products: Product[]; on
         <div className="flatrail-items">
           {products.map(p => {
             const open = active === p.id;
-            const side = p.sideImage || p.frontImage;
+            const side = imageFor(p, storeConfig.rail.straightRestView);
+            const face = imageFor(p, storeConfig.rail.straightHoverView);
             return (
               <motion.button
                 key={p.id}
@@ -69,7 +72,7 @@ export default function FlatRail({ products, onOpen }: { products: Product[]; on
                     transition={{ type: 'spring', stiffness: 160, damping: 22 }}
                   />
                   <motion.img
-                    src={p.frontImage} alt="" draggable={false} className="fr-img"
+                    src={face} alt="" draggable={false} className="fr-img"
                     initial={false}
                     animate={{ opacity: open ? 1 : 0, rotateY: open ? 0 : -70, scale: open ? 1.04 : 0.96 }}
                     transition={{ type: 'spring', stiffness: 160, damping: 22 }}

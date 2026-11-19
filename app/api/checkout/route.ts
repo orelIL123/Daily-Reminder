@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { initialProducts } from '@/lib/products';
 import { CURRENCY } from '@/lib/money';
+import { storeConfig } from '@/store.config';
 import { createPaymentSession, type Customer, type Order, type OrderLine } from '@/lib/payments';
 
-const FREE_SHIPPING_FROM = 350;
-const SHIPPING = 35;
+const FREE_SHIPPING_FROM = storeConfig.commerce.freeShippingFrom;
+const SHIPPING = storeConfig.commerce.shippingPrice;
 
 type Body = { lines?: { productId: string; size: string; color: string; qty: number }[]; customer?: Partial<Customer> };
 

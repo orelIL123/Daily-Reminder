@@ -6,6 +6,7 @@ import { Check, X } from 'lucide-react';
 import type { Product } from '@/lib/products';
 import { formatPrice } from '@/lib/money';
 import { useCart } from '@/lib/cart';
+import { storeConfig } from '@/store.config';
 
 /*
  * Product focus view: the whole page blurs behind, the piece and its buy card stay sharp.
@@ -88,7 +89,7 @@ export default function ProductSheet({ product, onClose }: { product: Product | 
               <button className={`focus-cta ${size ? 'is-ready' : ''} ${added ? 'is-added' : ''}`} disabled={!size || added} onClick={addToBag}>
                 {added ? <><Check size={16} /> Added</> : size ? `Add to bag — ${formatPrice(product.price)}` : 'Select a size'}
               </button>
-              <p className="focus-note">Free shipping over ₪350 · 14-day returns</p>
+              <p className="focus-note">{storeConfig.commerce.perks.join(' · ')}</p>
             </div>
           </motion.div>
         </motion.div>

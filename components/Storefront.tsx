@@ -9,6 +9,12 @@ import ProductSheet from './ProductSheet';
 import { useProducts } from '@/lib/useProducts';
 import { formatPrice } from '@/lib/money';
 import type { Product } from '@/lib/products';
+import { storeConfig } from '@/store.config';
+
+const { brand, hero, rail } = storeConfig;
+const heroStyle = hero.background
+  ? ({ ['--hero-bg' as string]: `url('${hero.background.desktop}')`, ['--hero-bg-m' as string]: `url('${hero.background.mobile}')` } as React.CSSProperties)
+  : undefined;
 
 export default function Storefront() {
   const products = useProducts();
@@ -19,10 +25,14 @@ export default function Storefront() {
 
   return (
     <>
-      <section id="rail" className="hero">
-        <div className="hero-eyebrow">New collection <span>|</span> Premium streetwear</div>
+      <section id="rail" className={`hero ${hero.background ? 'has-bg' : ''}`} style={heroStyle}>
+        <div className="hero-eyebrow">{hero.eyebrow.map((t, i) => <span key={t}>{i > 0 && <i>|</i>}{t}</span>)}</div>
 
-        <Rail3D products={products} onActiveChange={setActive} onOpen={setOpen} />
+        {rail.layout !== 'straight' ? (
+          <Rail3D products={products} onActiveChange={setActive} onOpen={setOpen} />
+        ) : (
+          <FlatRail products={products} onOpen={setOpen} />
+        )}
 
         <div className="hero-caption" aria-live="polite">
           <AnimatePresence mode="wait">
@@ -40,16 +50,16 @@ export default function Storefront() {
             <a className="btn-outline" href="#collection">Shop the collection <ArrowDown size={15} /></a>
           </div>
         </div>
-        <p className="hero-side-copy">Crafted in heavyweight fleece.<br />Cut oversized. Made to last.</p>
+        <p className="hero-side-copy">{hero.sideCopy.map((l, i) => <span key={i}>{l}<br /></span>)}</p>
       </section>
 
-      <section id="rail-b" className="rail-b">
+      {rail.layout === 'both' && <section id="rail-b" className="rail-b">
         <header className="rail-b-head">
           <span className="eyebrow-sm">Option B</span>
           <h2>The straight rail</h2>
         </header>
         <FlatRail products={products} onOpen={setOpen} />
-      </section>
+      </section>}
 
       <section id="collection" className="collection">
         <header className="section-head">
@@ -74,11 +84,11 @@ export default function Storefront() {
       </section>
 
       <section id="about" className="about">
-        <p>Considered essentials, made to move with you. Designed in Tel Aviv.</p>
+        <p>{brand.footerNote}</p>
       </section>
 
       <footer className="site-footer">
-        <span>© {new Date().getFullYear()} Daily Reminder</span>
+        <span>© {new Date().getFullYear()} {brand.name}</span>
         <nav><a href="#">Shipping</a><a href="#">Returns</a><a href="#">Terms</a><a href="#">Accessibility</a><a href="#">Contact</a></nav>
       </footer>
 

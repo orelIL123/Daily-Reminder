@@ -6,9 +6,10 @@ import { ArrowLeft, Lock } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { useProducts } from '@/lib/useProducts';
 import { formatPrice } from '@/lib/money';
+import { storeConfig } from '@/store.config';
 
-const FREE_SHIPPING_FROM = 350;
-const SHIPPING = 35;
+const FREE_SHIPPING_FROM = storeConfig.commerce.freeShippingFrom;
+const SHIPPING = storeConfig.commerce.shippingPrice;
 
 export default function CheckoutPage() {
   const cart = useCart();
@@ -42,7 +43,7 @@ export default function CheckoutPage() {
   return (
     <div className="checkout">
       <header className="checkout-head">
-        <Link href="/" className="brand">Daily Reminder<span>.</span></Link>
+        <Link href="/" className="brand">{storeConfig.brand.name}{storeConfig.brand.accentDot && <span>.</span>}</Link>
         <span className="secure"><Lock size={14} /> Secure checkout</span>
       </header>
       <div className="checkout-body">

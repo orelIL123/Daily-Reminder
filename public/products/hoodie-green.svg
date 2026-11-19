@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 455" width="360" height="455">
+<defs><linearGradient id="cloth" x1="0" x2="1"><stop stop-color="#1f4937"/><stop offset=".16" stop-color="#1f4937"/><stop offset=".43" stop-color="#1f4937"/><stop offset=".64" stop-color="#3a5f4f"/><stop offset=".84" stop-color="#1f4937"/><stop offset="1" stop-color="#18392b"/></linearGradient><linearGradient id="light" x1="0" x2="1"><stop stop-color="#000" stop-opacity=".15"/><stop offset=".4" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient><filter id="shadow"><feGaussianBlur stdDeviation="2"/></filter></defs>
+<g transform="">
+<path d="M179 47 Q170 42 178 34 Q185 28 186 22 Q188 11 178 12" stroke="#595b5c" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M179 45 L126 80 Q119 86 132 87 L228 87 Q241 86 233 80 Z" fill="none" stroke="#8c8070" stroke-width="5" stroke-linejoin="round"/>
+<path d="M 106 103 L 73 115 Q 64 122 56 150 L 22 242 Q 16 255 27 263 L 68 275 L 91 225 L 91 398 Q 180 418 269 398 L 269 225 L 292 275 L 333 263 Q 344 255 338 242 L 304 150 Q 296 122 287 115 L 254 103 Q 218 86 180 86 Q 142 86 106 103 Z" fill="url(#cloth)" stroke="#131817" stroke-opacity=".27" stroke-width="2"/>
+<path d="M 106 103 L 73 115 Q 64 122 56 150 L 22 242 Q 16 255 27 263 L 68 275 L 91 225 L 91 398 Q 180 418 269 398 L 269 225 L 292 275 L 333 263 Q 344 255 338 242 L 304 150 Q 296 122 287 115 L 254 103 Q 218 86 180 86 Q 142 86 106 103 Z" fill="url(#light)"/>
+<path d="M94 124 Q114 158 100 279 M268 124 Q246 166 260 280 M125 166 Q145 260 130 380 M237 167 Q213 260 234 380" stroke="#fff" stroke-opacity=".08" stroke-width="6" fill="none"/>
+<path d="M103 112 Q125 133 128 152 M256 113 Q231 133 231 152" stroke="#090d0e" stroke-opacity=".16" stroke-width="3" fill="none"/>
+<path d="M128 104 Q113 76 130 47 Q146 24 179 29 Q212 24 230 47 Q247 76 231 104 L208 120 L186 91 L163 120 Z" fill="url(#cloth)" stroke="#111" stroke-opacity=".22" stroke-width="3"/><path d="M150 105 Q145 60 180 56 Q215 60 210 105" fill="#171b19" opacity=".32"/><path d="M160 117 L155 180 M200 117 L205 180" stroke="#ddd" stroke-opacity=".43" stroke-width="2"/><path d="M88 259 Q118 278 155 270 M205 270 Q240 278 270 259" stroke="#0b1010" opacity=".14" stroke-width="2" fill="none"/>
+<path d="M91 394 Q180 408 269 394" fill="none" stroke="#000" stroke-opacity=".16" stroke-width="11"/>
+<path d="M24 252 L69 264 M291 264 L335 252" fill="none" stroke="#000" stroke-opacity=".15" stroke-width="11"/>
+</g></svg>

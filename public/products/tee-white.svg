@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 455" width="360" height="455">
+<defs><linearGradient id="cloth" x1="0" x2="1"><stop stop-color="#eeeae2"/><stop offset=".16" stop-color="#eeeae2"/><stop offset=".43" stop-color="#eeeae2"/><stop offset=".64" stop-color="#f0ede5"/><stop offset=".84" stop-color="#eeeae2"/><stop offset="1" stop-color="#bab7b0"/></linearGradient><linearGradient id="light" x1="0" x2="1"><stop stop-color="#000" stop-opacity=".15"/><stop offset=".4" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient><filter id="shadow"><feGaussianBlur stdDeviation="2"/></filter></defs>
+<g transform="">
+<path d="M179 47 Q170 42 178 34 Q185 28 186 22 Q188 11 178 12" stroke="#595b5c" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M179 45 L126 80 Q119 86 132 87 L228 87 Q241 86 233 80 Z" fill="none" stroke="#8c8070" stroke-width="5" stroke-linejoin="round"/>
+<path d="M108 102 L70 119 L22 169 L65 222 L100 190 L99 389 Q180 409 261 389 L260 190 L295 222 L338 169 L290 119 L252 102 Q180 124 108 102Z" fill="url(#cloth)" stroke="#131817" stroke-opacity=".27" stroke-width="2"/>
+<path d="M108 102 L70 119 L22 169 L65 222 L100 190 L99 389 Q180 409 261 389 L260 190 L295 222 L338 169 L290 119 L252 102 Q180 124 108 102Z" fill="url(#light)"/>
+<path d="M94 124 Q114 158 100 279 M268 124 Q246 166 260 280 M125 166 Q145 260 130 380 M237 167 Q213 260 234 380" stroke="#fff" stroke-opacity=".08" stroke-width="6" fill="none"/>
+<path d="M103 112 Q125 133 128 152 M256 113 Q231 133 231 152" stroke="#090d0e" stroke-opacity=".16" stroke-width="3" fill="none"/>
+<path d="M145 95 Q180 127 215 95" fill="none" stroke="#0e1110" stroke-opacity=".42" stroke-width="5"/><path d="M88 259 Q118 278 155 270 M205 270 Q240 278 270 259" stroke="#0b1010" opacity=".14" stroke-width="2" fill="none"/>
+<path d="M91 394 Q180 408 269 394" fill="none" stroke="#000" stroke-opacity=".16" stroke-width="11"/>
+<path d="M24 252 L69 264 M291 264 L335 252" fill="none" stroke="#000" stroke-opacity=".15" stroke-width="11"/>
+</g></svg>

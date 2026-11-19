@@ -1,4 +1,5 @@
 'use client';
+import { isSoldOut } from '@/lib/useProducts';
 
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -115,14 +116,14 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
                 key={p.id}
                 data-id={p.id}
                 type="button"
-                className={`fr-item ${open ? 'is-open' : ''}`}
+                className={`fr-item ${open ? 'is-open' : ''} ${isSoldOut(p) ? 'is-soldout' : ''}`}
                 animate={{ width: open ? dims.open : dims.slot }}
                 transition={{ type: 'spring', stiffness: 220, damping: 26 }}
                 style={{ height: gh, zIndex: open ? 5 : 1 }}
                 onMouseEnter={() => canHover && !drag.current.down && setActive(p.id)}
                 onFocus={e => { if (canHover || e.currentTarget.matches(':focus-visible')) setActive(p.id); }}
                 onClick={() => tap(p)}
-                aria-label={`${name(p)}, ${price(p.price)}`}
+                aria-label={`${name(p)}, ${isSoldOut(p) ? t.product.soldOut : price(p.price)}`}
                 aria-current={open ? 'true' : undefined}
               >
                 <span className="fr-hang" style={{ width: dims.gw, height: gh, top: -HOOK_Y * gh }}>
@@ -139,6 +140,7 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
                     animate={{ opacity: open ? 1 : 0, rotateY: open ? 0 : -70, scale: open ? 1.04 : 0.96 }}
                     transition={{ type: 'spring', stiffness: 160, damping: 22 }}
                   />
+                  {isSoldOut(p) && <span className="soldout-tag" aria-hidden="true">{t.product.soldOut}</span>}
                   {featuredId === p.id && (
                     <motion.span className="fr-badge" initial={false} animate={{ opacity: open ? 1 : 0, scale: open ? 1 : 0.9 }}>
                       ★ {t.rail.featured}

@@ -9,6 +9,11 @@ export function useProducts(): Product[] {
   return useContext(CatalogContext);
 }
 
+/** True when every variant of an active product is at zero — shown greyed with a "sold out" label. */
+export function isSoldOut(p: Product): boolean {
+  return !!p.variants && p.variants.length > 0 && p.variants.every(v => v.stock <= 0);
+}
+
 /** Stock for one size/color; null when the product has no stock data (demo fallback). */
 export function stockFor(p: Product, size: string, color: string): number | null {
   if (!p.variants) return null;

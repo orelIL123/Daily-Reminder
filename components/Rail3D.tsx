@@ -1,4 +1,5 @@
 'use client';
+import { isSoldOut } from '@/lib/useProducts';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -289,10 +290,11 @@ function Garment({ slot, slots, product, geo, gh, offset, swing, isActive, stage
   const views = viewsOf(product);
   const { t, name, price } = useI18n();
   const label = name(product);
+  const out = isSoldOut(product);
 
   return (
     <motion.div
-      className={`g3d ${isActive ? 'is-active' : ''}`}
+      className={`g3d ${isActive ? 'is-active' : ''} ${out ? 'is-soldout' : ''}`}
       style={{ transform, visibility, width: geo.gw, marginLeft: -geo.gw / 2, top: -HOOK_Y * gh }}
     >
       <motion.div className="g3d-swing" style={{ rotateZ: pieceSwing }}>
@@ -303,7 +305,7 @@ function Garment({ slot, slots, product, geo, gh, offset, swing, isActive, stage
           whileHover={canHover ? { scale: 1.045 } : undefined}
           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
           onClick={() => onTap(slot)}
-          aria-label={isActive ? t.rail.tapContinue(label) : t.rail.bringFront(label)}
+          aria-label={`${isActive ? t.rail.tapContinue(label) : t.rail.bringFront(label)}${out ? ` — ${t.product.soldOut}` : ''}`}
           tabIndex={isActive ? 0 : -1}
         >
           <span className="g3d-glow" aria-hidden="true" />
@@ -320,6 +322,7 @@ function Garment({ slot, slots, product, geo, gh, offset, swing, isActive, stage
             />
           ))}
         </motion.button>
+        {out && <motion.span className="soldout-tag" style={{ opacity }} aria-hidden="true">{t.product.soldOut}</motion.span>}
         {storeConfig.rail.showPriceTags && (
           <motion.span className="g3d-tag" style={{ opacity }} aria-hidden="true">
             <i />{price(product.price)}

@@ -7,7 +7,7 @@ import type { Product } from '@/lib/products';
 import { useI18n } from '@/lib/i18n/client';
 import { useCart } from '@/lib/cart';
 import { storeConfig } from '@/store.config';
-import { stockFor } from '@/lib/useProducts';
+import { isSoldOut, stockFor } from '@/lib/useProducts';
 
 /*
  * Product focus view: the whole page blurs behind, the piece and its buy card stay sharp.
@@ -57,7 +57,8 @@ export default function ProductSheet({ product, onClose }: { product: Product | 
             exit={{ y: 20, scale: 0.97, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 220, damping: 26 }}
           >
-            <div className="focus-visual">
+            <div className={`focus-visual ${isSoldOut(product) ? 'is-soldout' : ''}`}>
+              {isSoldOut(product) && <span className="soldout-tag">{t.product.soldOut}</span>}
               <motion.img
                 className="focus-img" src={product.frontImage} alt={t.product.frontAlt(name(product))}
                 initial={false}
@@ -105,10 +106,9 @@ export default function ProductSheet({ product, onClose }: { product: Product | 
               </div>
               {size && (() => { const left = stockFor(product, size, color); return left !== null && left > 0 && left <= 3
                 ? <p className="focus-low">{t.product.onlyLeft(left, size)}</p> : null; })()}
-              {product.variants && product.variants.every(v => v.stock === 0) && <p className="focus-low">{t.product.soldOut}</p>}
 
-              <button className={`focus-cta ${size ? 'is-ready' : ''} ${added ? 'is-added' : ''}`} disabled={!size || added} onClick={addToBag}>
-                {added ? <><Check size={16} /> {t.product.added}</> : size ? t.product.addToBag(price(product.price)) : t.product.selectSize}
+              <button className={`focus-cta ${size ? 'is-ready' : ''} ${added ? 'is-added' : ''} ${isSoldOut(product) ? 'is-soldout' : ''}`} disabled={!size || added || isSoldOut(product)} onClick={addToBag}>
+                {isSoldOut(product) ? t.product.soldOut : added ? <><Check size={16} /> {t.product.added}</> : size ? t.product.addToBag(price(product.price)) : t.product.selectSize}
               </button>
               <p className="focus-note">{storeConfig.commerce.perks.map(tr).join(' · ')}</p>
             </div>

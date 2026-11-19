@@ -7,7 +7,7 @@ import Rail3D from './Rail3D';
 import FlatRail from './FlatRail';
 import RailShowcase from './RailShowcase';
 import ProductSheet from './ProductSheet';
-import { useProducts } from '@/lib/useProducts';
+import { isSoldOut, useProducts } from '@/lib/useProducts';
 import { useI18n } from '@/lib/i18n/client';
 import type { Product } from '@/lib/products';
 import { storeConfig } from '@/store.config';
@@ -72,14 +72,15 @@ export default function Storefront() {
         </header>
         <div className="grid">
           {products.map(p => (
-            <button key={p.id} className="card" onClick={() => setOpen(p)}>
+            <button key={p.id} className={`card ${isSoldOut(p) ? 'is-soldout' : ''}`} onClick={() => setOpen(p)}>
               <div className="card-img">
+                {isSoldOut(p) && <span className="soldout-tag">{t.product.soldOut}</span>}
                 <img src={p.frontImage} alt="" loading="lazy" />
                 {(p.backImage || p.sideImage) && <img className="card-img-alt" src={p.backImage || p.sideImage} alt="" loading="lazy" />}
               </div>
               <div className="card-meta">
                 <strong>{name(p)}</strong>
-                <span>{price(p.price)}</span>
+                <span>{isSoldOut(p) ? <s>{price(p.price)}</s> : price(p.price)}</span>
               </div>
               <small>{t.collection.colors(p.colors.length)}</small>
             </button>

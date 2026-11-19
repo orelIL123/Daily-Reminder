@@ -8,7 +8,7 @@ export default function SiteHeader() {
   const cart = useCart();
   return (
     <header className="site-header">
-      <Link href="/" className="brand" aria-label="Home">ATELIER<span>.</span></Link>
+      <Link href="/" className="brand" aria-label="Home">Daily Reminder<span>.</span></Link>
       <nav className="nav-links" aria-label="Main">
         <Link href="/#rail">New in</Link>
         <Link href="/#collection">Shop all</Link>

@@ -3,7 +3,7 @@ import Providers from '@/components/Providers';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ATELIER — New Collection',
+  title: 'Daily Reminder — New Collection',
   description: 'Premium streetwear. Explore the collection on the rail.',
 };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#f3eef8' };

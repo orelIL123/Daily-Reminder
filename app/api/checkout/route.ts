@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.qty, 0);
   const shipping = subtotal >= FREE_SHIPPING_FROM ? 0 : SHIPPING;
   const order: Order = {
-    id: `AT-${Date.now().toString(36).toUpperCase()}`,
+    id: `DR-${Date.now().toString(36).toUpperCase()}`,
     lines, subtotal, shipping, total: subtotal + shipping, currency: CURRENCY,
     customer: c as Customer,
   };

@@ -26,7 +26,7 @@ export const initialProducts: Product[] = [
   { id: '08', name: 'Stonewash Crew', category: 'Sweatshirts', price: 349, frontImage: '/products/sweat-stone.svg', sideImage: '/products/sweat-stone-side.svg', description: 'A washed cotton pullover with a lived-in hand feel.', colors: ['Stone', 'Slate'], sizes: ['S','M','L','XL'] },
   { id: '09', name: 'Coastal Hoodie', category: 'Essentials', price: 389, frontImage: '/products/hoodie-cream.svg', sideImage: '/products/hoodie-cream-side.svg', description: 'A warm, clean everyday staple.', colors: ['Cream', 'Navy'], sizes: ['S','M','L','XL'] }
 ];
-export const STORAGE_KEY = 'atelier-rail-products-v3';
+export const STORAGE_KEY = 'dr-rail-products-v4';
 export function loadProducts(): Product[] {
   if (typeof window === 'undefined') return initialProducts;
   try {

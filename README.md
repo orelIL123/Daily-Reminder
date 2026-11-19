@@ -1,4 +1,4 @@
-# ATELIER — 3D Rail Storefront
+# Daily Reminder — 3D Rail Storefront
 
 Next.js 15 / React 19 storefront built around a curved 3D clothing rail.
 

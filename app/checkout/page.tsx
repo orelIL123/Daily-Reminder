@@ -42,7 +42,7 @@ export default function CheckoutPage() {
   return (
     <div className="checkout">
       <header className="checkout-head">
-        <Link href="/" className="brand">ATELIER<span>.</span></Link>
+        <Link href="/" className="brand">Daily Reminder<span>.</span></Link>
         <span className="secure"><Lock size={14} /> Secure checkout</span>
       </header>
       <div className="checkout-body">

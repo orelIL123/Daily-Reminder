@@ -2,27 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Minus, Plus, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import type { Product } from '@/lib/products';
 import { formatPrice } from '@/lib/money';
 import { useCart } from '@/lib/cart';
 
-const SWATCH: Record<string, string> = {
-  cream: '#e6dfcf', ecru: '#e6dfcf', white: '#f5f3ed', forest: '#204b39', stone: '#aaa69b',
-  charcoal: '#36383b', ash: '#969793', slate: '#686e72', navy: '#202e3f', black: '#191919',
-};
-
+/*
+ * Product focus view: the whole page blurs behind, the piece and its buy card stay sharp.
+ */
 export default function ProductSheet({ product, onClose }: { product: Product | null; onClose: () => void }) {
   const cart = useCart();
   const [size, setSize] = useState('');
-  const [color, setColor] = useState('');
-  const [qty, setQty] = useState(1);
-  const [view, setView] = useState(0);
-  const [error, setError] = useState('');
+  const [view, setView] = useState<'front' | 'back'>('front');
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     if (!product) return;
-    setSize(''); setColor(product.colors[0] ?? ''); setQty(1); setView(0); setError('');
+    setSize(''); setView('front'); setAdded(false);
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
@@ -30,82 +26,71 @@ export default function ProductSheet({ product, onClose }: { product: Product | 
   }, [product, onClose]);
 
   function addToBag() {
-    if (!product) return;
-    if (!size) { setError('Please choose a size'); return; }
-    cart.add({ productId: product.id, size, color, qty });
-    onClose();
-    cart.open();
+    if (!product || !size) return;
+    cart.add({ productId: product.id, size, color: product.colors[0] ?? '', qty: 1 });
+    setAdded(true);
+    window.setTimeout(() => { onClose(); cart.open(); }, 650);
   }
 
-  const views = product
-    ? (product.sideImage && product.backImage ? [product.frontImage, product.sideImage, product.backImage] : [product.frontImage, product.backImage || product.sideImage || product.frontImage])
-    : [];
-  const viewNames = views.length === 3 ? ['Front', 'Side', 'Back'] : ['Front', 'Back'];
+  const back = product ? (product.backImage || product.sideImage || product.frontImage) : '';
+  const mirrored = product ? !product.backImage && !product.sideImage : false;
 
   return (
     <AnimatePresence>
       {product && (
-        <motion.div className="sheet-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
-          <motion.section className="sheet" role="dialog" aria-modal="true" aria-label={product.name}
-            initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 30 }}>
-            <button className="sheet-close" aria-label="Close" onClick={onClose}><X size={20} /></button>
+        <motion.div
+          className="focus"
+          role="dialog" aria-modal="true" aria-label={product.name}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
+          onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
+        >
+          <button className="focus-close" aria-label="Close" onClick={onClose}><X size={20} /></button>
 
-            <div className="sheet-visual">
-              <div className="sheet-turn">
-                {views.map((src, i) => (
-                  <motion.img key={src + i} className="sheet-face" src={src} alt={i === 0 ? product.name : ''}
-                    initial={false}
-                    animate={{ opacity: view === i ? 1 : 0, rotateY: view === i ? 0 : i > view ? -60 : 60, scale: view === i ? 1 : 0.95 }}
-                    transition={{ type: 'spring', stiffness: 110, damping: 17 }} />
-                ))}
-              </div>
-              <div className="sheet-views" role="tablist" aria-label="View">
-                {views.map((_, i) => (
-                  <button key={i} role="tab" aria-selected={view === i} className={view === i ? 'is-on' : ''} onClick={() => setView(i)}>{viewNames[i]}</button>
-                ))}
-              </div>
+          <motion.div
+            className="focus-card"
+            initial={{ y: 30, scale: 0.96, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            exit={{ y: 20, scale: 0.97, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 26 }}
+          >
+            <div className="focus-visual">
+              <motion.img
+                className="focus-img" src={product.frontImage} alt={`${product.name} — front`}
+                initial={false}
+                animate={{ opacity: view === 'front' ? 1 : 0, rotateY: view === 'front' ? 0 : -70 }}
+                transition={{ type: 'spring', stiffness: 130, damping: 20 }}
+              />
+              <motion.img
+                className={`focus-img ${mirrored ? 'is-mirrored' : ''}`} src={back} alt={`${product.name} — back`}
+                initial={false}
+                animate={{ opacity: view === 'back' ? 1 : 0, rotateY: view === 'back' ? 0 : 70 }}
+                transition={{ type: 'spring', stiffness: 130, damping: 20 }}
+              />
             </div>
 
-            <div className="sheet-info">
-              <span className="eyebrow-sm">{product.category}</span>
+            <div className="focus-info">
               <h2>{product.name}</h2>
-              <div className="sheet-price">{formatPrice(product.price)}</div>
-              <p className="sheet-desc">{product.description}</p>
+              <p className="focus-price">{formatPrice(product.price)}</p>
 
-              <div className="field-label">Color — <strong>{color}</strong></div>
-              <div className="swatches">
-                {product.colors.map(c => (
-                  <button key={c} aria-label={c} aria-pressed={c === color} className={c === color ? 'is-on' : ''}
-                    style={{ background: SWATCH[c.toLowerCase()] ?? '#bbb' }} onClick={() => setColor(c)} />
-                ))}
+              <div className="seg" role="tablist" aria-label="View">
+                <motion.span className="seg-pill" layout transition={{ type: 'spring', stiffness: 400, damping: 34 }}
+                  style={{ left: view === 'front' ? 3 : '50%' }} />
+                <button role="tab" aria-selected={view === 'front'} className={view === 'front' ? 'is-on' : ''} onClick={() => setView('front')}>Front</button>
+                <button role="tab" aria-selected={view === 'back'} className={view === 'back' ? 'is-on' : ''} onClick={() => setView('back')}>Back</button>
               </div>
 
-              <div className="field-label">Size {error && <span className="field-error">{error}</span>}</div>
-              <div className="sizes">
+              <div className="size-pills" role="radiogroup" aria-label="Size">
                 {product.sizes.map(s => (
-                  <button key={s} className={s === size ? 'is-on' : ''} aria-pressed={s === size} onClick={() => { setSize(s); setError(''); }}>{s}</button>
+                  <button key={s} role="radio" aria-checked={s === size} className={s === size ? 'is-on' : ''} onClick={() => setSize(s)}>{s}</button>
                 ))}
               </div>
 
-              <div className="sheet-buy">
-                <div className="qty">
-                  <button aria-label="Less" onClick={() => setQty(q => Math.max(1, q - 1))}><Minus size={14} /></button>
-                  <span>{qty}</span>
-                  <button aria-label="More" onClick={() => setQty(q => Math.min(20, q + 1))}><Plus size={14} /></button>
-                </div>
-                <button className="btn-primary" onClick={addToBag}>
-                  Add to bag — {formatPrice(product.price * qty)} <ArrowRight size={16} />
-                </button>
-              </div>
-              <ul className="sheet-perks">
-                <li>Free shipping over ₪350</li>
-                <li>14-day returns</li>
-                <li>Secure checkout</li>
-              </ul>
+              <button className={`focus-cta ${size ? 'is-ready' : ''} ${added ? 'is-added' : ''}`} disabled={!size || added} onClick={addToBag}>
+                {added ? <><Check size={16} /> Added</> : size ? `Add to bag — ${formatPrice(product.price)}` : 'Select a size'}
+              </button>
+              <p className="focus-note">Free shipping over ₪350 · 14-day returns</p>
             </div>
-          </motion.section>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

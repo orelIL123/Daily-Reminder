@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import Rail3D from './Rail3D';
+import FlatRail from './FlatRail';
 import ProductSheet from './ProductSheet';
 import { useProducts } from '@/lib/useProducts';
 import { formatPrice } from '@/lib/money';
@@ -42,6 +43,14 @@ export default function Storefront() {
         <p className="hero-side-copy">Crafted in heavyweight fleece.<br />Cut oversized. Made to last.</p>
       </section>
 
+      <section id="rail-b" className="rail-b">
+        <header className="rail-b-head">
+          <span className="eyebrow-sm">Option B</span>
+          <h2>The straight rail</h2>
+        </header>
+        <FlatRail products={products} onOpen={setOpen} />
+      </section>
+
       <section id="collection" className="collection">
         <header className="section-head">
           <h2>The collection</h2>
@@ -69,7 +78,7 @@ export default function Storefront() {
       </section>
 
       <footer className="site-footer">
-        <span>© {new Date().getFullYear()} ATELIER</span>
+        <span>© {new Date().getFullYear()} Daily Reminder</span>
         <nav><a href="#">Shipping</a><a href="#">Returns</a><a href="#">Terms</a><a href="#">Accessibility</a><a href="#">Contact</a></nav>
       </footer>
 

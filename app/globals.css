@@ -199,6 +199,12 @@ img { display: block; max-width: 100%; }
 .size-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .size-pills button { min-width: 46px; height: 46px; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,.16); background: #fff; font-size: 12.5px; font-weight: 500; transition: background .2s, color .2s, border-color .2s, transform .2s var(--ease); }
 .size-pills button:hover { border-color: var(--ink); }
+.size-pills button.is-out { color: #b9b8bd; border-color: #e6e5ea; background: repeating-linear-gradient(135deg, #fff 0 6px, #f4f3f6 6px 7px); text-decoration: line-through; cursor: not-allowed; }
+.size-pills button.is-out:hover { border-color: #e6e5ea; }
+.color-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.color-pills button { height: 30px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(0,0,0,.14); background: #fff; font-size: 11.5px; transition: background .2s, color .2s; }
+.color-pills button.is-on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.focus-low { margin: -6px 0 0; font-size: 12px; color: #b4532a; }
 .size-pills button.is-on { background: var(--ink); border-color: var(--ink); color: #fff; transform: scale(1.06); }
 .focus-cta { width: 100%; height: 50px; border-radius: 999px; background: #d4d3d8; color: #fff; font-size: 12px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: not-allowed; transition: background .3s, transform .2s var(--ease); }
 .focus-cta.is-ready { background: var(--ink); cursor: pointer; }
@@ -242,6 +248,8 @@ img { display: block; max-width: 100%; }
 .checkout-form input { height: 46px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; transition: border-color .2s; }
 .checkout-form input:focus { border-color: #8f7bc9; outline: none; }
 .checkout-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.check { display: flex !important; grid-template-columns: none; align-items: center; gap: 10px; margin: 4px 0 18px; font-size: 13px; color: #48484d; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--ink); }
 .form-error { color: #b4232a; font-size: 13px; }
 .pay-note { display: block; margin-top: 12px; font-size: 12px; color: var(--sub); text-align: center; }
 .checkout-summary { align-self: start; position: sticky; top: 24px; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 24px; }

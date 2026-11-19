@@ -29,7 +29,7 @@ export default function CheckoutPage() {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customer, lines: cart.lines.map(({ productId, size, color, qty }) => ({ productId, size, color, qty })) }),
+        body: JSON.stringify({ customer: { ...customer, newsletter: customer.newsletter === 'on' }, lines: cart.lines.map(({ productId, size, color, qty }) => ({ productId, size, color, qty })) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Something went wrong');
@@ -66,6 +66,10 @@ export default function CheckoutPage() {
               <label>Postal code<input name="zip" autoComplete="postal-code" /></label>
             </div>
           </fieldset>
+          <label className="check">
+            <input type="checkbox" name="newsletter" defaultChecked />
+            <span>Keep me posted on new drops and restocks</span>
+          </label>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="btn-primary btn-block" disabled={busy || rows.length === 0}>
             {busy ? 'Redirecting to payment…' : `Pay ${formatPrice(subtotal + shipping)}`}

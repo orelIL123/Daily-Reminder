@@ -16,7 +16,7 @@ type CartState = {
   clear: () => void;
 };
 
-const CART_KEY = 'dr-cart-v1';
+const CART_KEY = 'dr-cart-v2';
 const CartContext = createContext<CartState | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {

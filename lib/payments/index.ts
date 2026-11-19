@@ -3,31 +3,25 @@ import 'server-only';
 /*
  * Payment provider adapter.
  *
- * Stripe does not onboard Israeli businesses, so the real provider will be one of:
- *   - Shopify (headless): checkout, orders, inventory and Israeli gateways handled by Shopify
- *   - An Israeli processor with a hosted payment page: PayPlus, Grow (Meshulam), Cardcom, Tranzila
+ * Flow for every provider:
+ *   1. place_order() in Supabase creates the order and reserves stock (30 min)
+ *   2. createPaymentSession() returns the provider's hosted payment page → redirect the shopper
+ *   3. the provider calls back → the server VERIFIES the transaction with the provider,
+ *      then calls mark_order_paid(). Unpaid orders release their stock automatically.
  *
- * Every option works the same way from the site's point of view:
- *   1. the server builds the order from trusted prices (never from the browser)
- *   2. the provider returns a hosted payment-page URL → we redirect the shopper there
- *   3. the provider calls our webhook when payment succeeds → we mark the order paid
- *
- * Only `demo` is implemented until the store picks its provider.
+ * Chosen provider: Hyp (credentials HYP_MASOF / HYP_API_KEY / HYP_PASSP, server only).
+ * Until it is connected, `demo` skips the payment page.
  */
 
-export type OrderLine = { productId: string; name: string; size: string; color: string; qty: number; unitPrice: number };
-export type Customer = { name: string; email: string; phone: string; address: string; city: string; zip: string };
-export type Order = { id: string; lines: OrderLine[]; subtotal: number; shipping: number; total: number; currency: string; customer: Customer };
+export type PaymentRequest = { orderId: string; orderNumber: number; total: number; currency: string; email: string; name: string; phone: string };
 export type PaymentSession = { redirectUrl: string };
 
-export async function createPaymentSession(order: Order, origin: string): Promise<PaymentSession> {
+export async function createPaymentSession(req: PaymentRequest, origin: string): Promise<PaymentSession> {
   const provider = process.env.PAYMENT_PROVIDER ?? 'demo';
   switch (provider) {
     case 'demo':
-      return { redirectUrl: `${origin}/checkout/success?order=${encodeURIComponent(order.id)}&demo=1` };
-    // case 'payplus': return payplus.createSession(order, origin);
-    // case 'grow':    return grow.createSession(order, origin);
-    // case 'cardcom': return cardcom.createSession(order, origin);
+      return { redirectUrl: `${origin}/checkout/success?order=${req.orderNumber}&demo=1` };
+    // case 'hyp': return hyp.createSession(req, origin);
     default:
       throw new Error(`Payment provider "${provider}" is not configured yet`);
   }

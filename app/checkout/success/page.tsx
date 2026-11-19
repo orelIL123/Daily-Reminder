@@ -13,9 +13,9 @@ function Success() {
   useEffect(() => { clear(); }, [clear]);
   return (
     <div className="success">
-      <span className="eyebrow-sm">Order {params.get('order')}</span>
+      <span className="eyebrow-sm">Order #{params.get('order')}</span>
       <h1>Thank you.</h1>
-      <p>{demo ? 'Demo mode — no payment was taken. Connect a payment provider to go live.' : 'Your order is confirmed. A receipt is on its way to your inbox.'}</p>
+      <p>{demo ? 'Your order is saved. Demo mode — no payment was taken yet; the payment page (Hyp) will appear here once it is connected.' : 'Your order is confirmed. A receipt is on its way to your inbox.'}</p>
       <Link className="btn-primary" href="/">Back to the store</Link>
     </div>
   );

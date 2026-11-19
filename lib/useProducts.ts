@@ -1,20 +1,16 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { initialProducts, loadProducts, Product } from './products';
+import { createContext, useContext } from 'react';
+import { initialProducts, type Product } from './products';
 
-/** Products for the storefront. Today: demo data + browser-local admin edits.
- *  Later: swap the body for a fetch from Shopify / Supabase. */
+/** The catalogue loaded on the server (Supabase) and handed to every client component. */
+export const CatalogContext = createContext<Product[]>(initialProducts);
+
 export function useProducts(): Product[] {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  useEffect(() => {
-    const refresh = () => setProducts(loadProducts());
-    refresh();
-    window.addEventListener('storage', refresh);
-    window.addEventListener('rail-products-updated', refresh);
-    return () => {
-      window.removeEventListener('storage', refresh);
-      window.removeEventListener('rail-products-updated', refresh);
-    };
-  }, []);
-  return products;
+  return useContext(CatalogContext);
+}
+
+/** Stock for one size/color; null when the product has no stock data (demo fallback). */
+export function stockFor(p: Product, size: string, color: string): number | null {
+  if (!p.variants) return null;
+  return p.variants.find(v => v.size === size && v.color === color)?.stock ?? 0;
 }

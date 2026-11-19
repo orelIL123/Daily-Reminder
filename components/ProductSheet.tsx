@@ -7,6 +7,7 @@ import type { Product } from '@/lib/products';
 import { formatPrice } from '@/lib/money';
 import { useCart } from '@/lib/cart';
 import { storeConfig } from '@/store.config';
+import { stockFor } from '@/lib/useProducts';
 
 /*
  * Product focus view: the whole page blurs behind, the piece and its buy card stay sharp.
@@ -14,12 +15,13 @@ import { storeConfig } from '@/store.config';
 export default function ProductSheet({ product, onClose }: { product: Product | null; onClose: () => void }) {
   const cart = useCart();
   const [size, setSize] = useState('');
+  const [color, setColor] = useState('');
   const [view, setView] = useState<'front' | 'back'>('front');
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
     if (!product) return;
-    setSize(''); setView('front'); setAdded(false);
+    setSize(''); setColor(product.colors[0] ?? ''); setView('front'); setAdded(false);
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
@@ -28,7 +30,7 @@ export default function ProductSheet({ product, onClose }: { product: Product | 
 
   function addToBag() {
     if (!product || !size) return;
-    cart.add({ productId: product.id, size, color: product.colors[0] ?? '', qty: 1 });
+    cart.add({ productId: product.id, size, color, qty: 1 });
     setAdded(true);
     window.setTimeout(() => { onClose(); cart.open(); }, 650);
   }
@@ -80,11 +82,29 @@ export default function ProductSheet({ product, onClose }: { product: Product | 
                 <button role="tab" aria-selected={view === 'back'} className={view === 'back' ? 'is-on' : ''} onClick={() => setView('back')}>Back</button>
               </div>
 
+              {product.colors.length > 1 && (
+                <div className="color-pills" role="radiogroup" aria-label="Color">
+                  {product.colors.map(c => (
+                    <button key={c} role="radio" aria-checked={c === color} className={c === color ? 'is-on' : ''}
+                      onClick={() => { setColor(c); setSize(''); }}>{c}</button>
+                  ))}
+                </div>
+              )}
+
               <div className="size-pills" role="radiogroup" aria-label="Size">
-                {product.sizes.map(s => (
-                  <button key={s} role="radio" aria-checked={s === size} className={s === size ? 'is-on' : ''} onClick={() => setSize(s)}>{s}</button>
-                ))}
+                {product.sizes.map(s => {
+                  const left = stockFor(product, s, color);
+                  const soldOut = left === 0;
+                  return (
+                    <button key={s} role="radio" aria-checked={s === size} disabled={soldOut}
+                      aria-label={soldOut ? `${s} — sold out` : s}
+                      className={`${s === size ? 'is-on' : ''} ${soldOut ? 'is-out' : ''}`} onClick={() => setSize(s)}>{s}</button>
+                  );
+                })}
               </div>
+              {size && (() => { const left = stockFor(product, size, color); return left !== null && left > 0 && left <= 3
+                ? <p className="focus-low">Only {left} left in {size}</p> : null; })()}
+              {product.variants && product.variants.every(v => v.stock === 0) && <p className="focus-low">Sold out</p>}
 
               <button className={`focus-cta ${size ? 'is-ready' : ''} ${added ? 'is-added' : ''}`} disabled={!size || added} onClick={addToBag}>
                 {added ? <><Check size={16} /> Added</> : size ? `Add to bag — ${formatPrice(product.price)}` : 'Select a size'}

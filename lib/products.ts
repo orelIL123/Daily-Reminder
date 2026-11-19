@@ -1,5 +1,13 @@
+export type Variant = { id: string; size: string; color: string; stock: number };
+
 export type Product = {
   id: string;
+  slug?: string;
+  nameEn?: string;
+  descriptionEn?: string;
+  compareAtPrice?: number;
+  /** Present when the catalogue comes from Supabase: real stock per size × color. */
+  variants?: Variant[];
   name: string;
   category: string;
   price: number;

@@ -10,8 +10,8 @@ import { useI18n } from '@/lib/i18n/client';
 export default function CartDrawer() {
   const cart = useCart();
   const products = useProducts();
-  const { t, href, name, price, color, dir } = useI18n();
-  const from = dir === 'rtl' ? '-100%' : '100%';
+  const { t, href, name, price, color } = useI18n();
+  const from = '100%';
   const rows = cart.lines
     .map(l => ({ line: l, product: products.find(p => p.id === l.productId) }))
     .filter(r => r.product);

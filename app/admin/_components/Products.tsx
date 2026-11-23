@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw, Sparkles } from 'lucide-react';
+import { rehang } from '@/lib/admin/compose';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import { LOW_STOCK, PRODUCT_STATUS_LABEL, ils, type Category, type ProductRow, type ProductStatus } from '@/lib/admin/types';
 import ProductForm from './ProductForm';
@@ -28,6 +29,35 @@ export default function Products() {
   }, []);
   useEffect(() => { load(); }, [load]);
 
+  // one-off: redraw the new hanger on photos uploaded before the hanger was redesigned
+  const [hangBusy, setHangBusy] = useState('');
+  async function refreshHangers() {
+    const list = products.flatMap(p => p.images.filter(i => i.url.includes('/storage/v1/object/public/product-images/') && !i.url.includes('-h2.webp')).map(i => ({ p, i })));
+    if (!list.length) { window.alert('כל התמונות כבר עם הקולב החדש.'); return; }
+    if (!window.confirm(`לעדכן את הקולב ב־${list.length} תמונות?`)) return;
+    const db = supabaseBrowser();
+    let done = 0, failed = 0;
+    for (const { p, i } of list) {
+      setHangBusy(`מעדכנים קולבים… ${done + failed + 1}/${list.length}`);
+      try {
+        const blob = await (await fetch(i.url, { cache: 'no-store' })).blob();
+        const out = await rehang(blob);
+        const path = `${p.id}/${i.view}-${Date.now()}-h2.webp`;
+        const up = await db.storage.from('product-images').upload(path, out, { contentType: 'image/webp', cacheControl: '31536000' });
+        if (up.error) throw up.error;
+        const url = db.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+        const upd = await db.from('product_images').update({ url }).eq('id', i.id);
+        if (upd.error) throw upd.error;
+        const old = i.url.match(/\/product-images\/(.+)$/)?.[1];
+        if (old) await db.storage.from('product-images').remove([old]);
+        done++;
+      } catch { failed++; }
+    }
+    setHangBusy('');
+    window.alert(`עודכנו ${done} תמונות${failed ? `, ${failed} נכשלו` : ''}.`);
+    load();
+  }
+
   const shown = useMemo(() => products.filter(p => filter === 'all' || p.status === filter), [products, filter]);
 
   return (
@@ -35,6 +65,7 @@ export default function Products() {
       <header className="adm-head">
         <div><h1>מוצרים</h1><p>{products.filter(p => p.status === 'active').length} פעילים באתר · {products.length} סה״כ</p></div>
         <div className="adm-head-actions">
+          <button className="adm-btn" onClick={refreshHangers} disabled={!!hangBusy || loading} title="מצייר מחדש את הקולב על תמונות שהועלו לפני העיצוב החדש"><Sparkles size={15} /> {hangBusy || 'עדכון קולבים'}</button>
           <button className="adm-btn" onClick={load} disabled={loading}><RefreshCw size={15} className={loading ? 'spin' : ''} /> רענון</button>
           <button className="adm-btn adm-btn-dark" onClick={() => setEditing('new')}><Plus size={16} /> מוצר חדש</button>
         </div>

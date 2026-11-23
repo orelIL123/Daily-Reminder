@@ -2,7 +2,8 @@
 Turn transparent garment photos (front / side / back) into rail-ready images:
   - crop to the garment, scale all views of one product by the SAME factor
   - place the collar at a fixed height on a 360:455 canvas
-  - draw the hanger hook at the collar so the piece hangs from the rail
+  - draw a walnut-wood hanger neck behind the collar and a silver hook above it,
+    so the piece hangs from the rail
 Usage: python3 compose_garments.py <raw_dir> <out_dir>
   raw_dir holds <slug>-front.png, <slug>-side.png, <slug>-back.png
 """
@@ -33,16 +34,72 @@ def neck_x(im, box, scale):
     return (x0 + (cols.min() + cols.max()) / 2) if len(cols) else (x0 + x1) / 2
 
 
-def hook(canvas, hx, hy):
-    big = Image.new('RGBA', (CW * SS, CH * SS), (0, 0, 0, 0))
+# hanger palette — walnut wood neck + brushed-silver hook (keep in sync with lib/admin/compose.ts)
+WOOD = ((58, 36, 22), (97, 64, 40), (140, 99, 65))      # edge, body, highlight (walnut)
+SILVER = (142, 146, 152)
+SILVER_HI = (232, 234, 238)
+SILVER_LO = (98, 101, 107)
+
+
+def wood_neck(canvas, hx):
+    """Wooden hanger neck. Drawn BEHIND the garment, so only the part above the collar shows."""
+    x0, x1 = hx - 23, hx + 23
+    y0, y1 = TOP - 38, TOP + 16
+    big = Image.new('L', (CW * SS, CH * SS), 0)
     d = ImageDraw.Draw(big)
-    col, w = (96, 98, 100, 255), 7 * SS
     S = lambda x, y: (x * SS, y * SS)
-    d.line([S(hx, hy), S(hx, hy - 34)], fill=col, width=w)
-    d.arc([S(hx - 24, TOP - 92), S(hx + 24, TOP - 44)], start=200, end=440, fill=col, width=w)
-    d.line([S(hx - 1, TOP - 44), S(hx - 1, hy - 30)], fill=col, width=w)
-    d.rounded_rectangle([S(hx - 9, hy - 6), S(hx + 9, hy + 6)], radius=4 * SS, fill=(120, 122, 125, 255))
-    canvas.alpha_composite(big.resize((CW, CH), Image.LANCZOS))
+    # a soft wedge: narrow at the top, wider where it meets the shoulders
+    d.polygon([S(hx - 9, y0), S(hx + 9, y0), S(x1, y1), S(x0, y1)], fill=255)
+    d.ellipse([S(hx - 9, y0 - 5), S(hx + 9, y0 + 5)], fill=255)
+    mask = np.array(big.resize((CW, CH), Image.LANCZOS)).astype(float) / 255.0
+    xs = np.arange(CW)[None, :].astype(float)
+    # cylinder shading across the width, light from the upper left
+    half = np.clip(((xs - hx) / 23.0), -1, 1)
+    prof = np.clip(1 - np.abs(half + 0.28) ** 1.6, 0, 1)          # 0 at edges, 1 near the lit side
+    edge, body, hi = [np.array(c, float) for c in WOOD]
+    t = prof[..., None]
+    col = np.where(t < 0.55, edge + (body - edge) * (t / 0.55), body + (hi - body) * ((t - 0.55) / 0.45))
+    col = np.broadcast_to(col, (CH, CW, 3)).copy()
+    # faint grain
+    rng = np.random.default_rng(7)
+    grain = rng.normal(0, 1, (CH, 1)).repeat(CW, axis=1)
+    grain = np.convolve(grain[:, 0], np.ones(9) / 9, mode='same')[:, None] * 14
+    col = np.clip(col + grain[..., None], 0, 255)
+    layer = np.zeros((CH, CW, 4), np.uint8)
+    layer[..., :3] = col.astype(np.uint8)
+    layer[..., 3] = (mask * 255).astype(np.uint8)
+    canvas.alpha_composite(Image.fromarray(layer, 'RGBA'))
+
+
+def silver_hook(canvas, hx):
+    """Silver metal hook + ferrule that reaches up to the rail. Drawn on top."""
+    def stroke_layer(color, w, dx=0, dy=0):
+        big = Image.new('RGBA', (CW * SS, CH * SS), (0, 0, 0, 0))
+        d = ImageDraw.Draw(big)
+        S = lambda x, y: ((x + dx) * SS, (y + dy) * SS)
+        col = color + (255,)
+        ww = int(w * SS)
+        d.line([S(hx, TOP - 30), S(hx, TOP - 34 - 4)], fill=col, width=ww)
+        d.arc([S(hx - 24, TOP - 92), S(hx + 24, TOP - 44)], start=200, end=440, fill=col, width=ww)
+        d.line([S(hx - 1, TOP - 44), S(hx - 1, TOP - 30)], fill=col, width=ww)
+        return big
+    base = stroke_layer(SILVER, 7)
+    shade = stroke_layer(SILVER_LO, 7, 0.9, 1.1)
+    hi = stroke_layer(SILVER_HI, 2.4, -1.3, -1.3)
+    out = Image.new('RGBA', base.size, (0, 0, 0, 0))
+    out.alpha_composite(shade)
+    out.alpha_composite(base)
+    # keep the highlight inside the base stroke
+    hi_a = np.minimum(np.array(hi)[..., 3], np.array(base)[..., 3])
+    hi_arr = np.array(hi); hi_arr[..., 3] = (hi_a * 0.85).astype(np.uint8)
+    out.alpha_composite(Image.fromarray(hi_arr, 'RGBA'))
+    # ferrule: a small silver collar where metal meets wood
+    d = ImageDraw.Draw(out)
+    S = lambda x, y: (x * SS, y * SS)
+    d.rounded_rectangle([S(hx - 12, TOP - 36), S(hx + 12, TOP - 24)], radius=5 * SS, fill=SILVER_LO + (255,))
+    d.rounded_rectangle([S(hx - 12, TOP - 36), S(hx + 12, TOP - 26)], radius=5 * SS, fill=SILVER + (255,))
+    d.rounded_rectangle([S(hx - 9, TOP - 35), S(hx + 2, TOP - 32)], radius=2 * SS, fill=SILVER_HI + (220,))
+    canvas.alpha_composite(out.resize((CW, CH), Image.LANCZOS))
 
 
 def compose(raw: pathlib.Path, out: pathlib.Path):
@@ -65,8 +122,9 @@ def compose(raw: pathlib.Path, out: pathlib.Path):
             ox = round(CW / 2 - nx)
             ox = max(10, min(CW - crop.width - 10, ox))
             canvas = Image.new('RGBA', (CW, CH), (0, 0, 0, 0))
+            wood_neck(canvas, round(ox + nx))          # behind the garment
             canvas.alpha_composite(crop, (ox, TOP))
-            hook(canvas, round(ox + nx), TOP + 6)
+            silver_hook(canvas, round(ox + nx))        # on top
             canvas.save(out / f'{slug}-{view}.webp', quality=86, method=6)
             print(f'{slug}-{view}.webp', crop.size)
 

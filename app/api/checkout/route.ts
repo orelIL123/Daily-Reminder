@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { storeConfig } from '@/store.config';
 import { createPaymentSession } from '@/lib/payments';
+import { userFromRequest } from '@/lib/supabase/verify';
+import { notifyAdmins } from '@/lib/push/server';
 
 type Line = { productId: string; size: string; color: string; qty: number };
 type Body = {
@@ -23,7 +25,7 @@ export async function POST(req: Request) {
 
   let body: Body;
   try { body = await req.json(); } catch { return fail('generic', 400); }
-  const locale = body.locale === 'en' ? 'en' : 'he';
+  const locale = 'en';
   const c = body.customer ?? {};
   for (const k of ['name', 'email', 'phone', 'address', 'city'] as const) {
     if (!String(c[k] ?? '').trim()) return fail('missing_fields', 400);
@@ -61,6 +63,28 @@ export async function POST(req: Request) {
     const code = (error.message || '').split(':')[0];
     if (!KNOWN.has(code)) console.error('[checkout] place_order failed:', error.message);
     return fail(KNOWN.has(code) ? code : 'generic', KNOWN.has(code) ? 409 : 500);
+  }
+
+  // alert the store owner's devices
+  await notifyAdmins(db, {
+    title: `🛍️ הזמנה חדשה #${order.order_number} — ₪${Number(order.total).toLocaleString('he-IL')}`,
+    body: `${String(c.name).trim()} · ${String(c.city).trim()} · ${items.reduce((n, i) => n + i.quantity, 0)} פריטים`,
+    url: `/admin#orders`,
+    tag: `order-${order.order_number}`,
+  });
+
+  // signed-in shopper: attach the order to their account
+  try {
+    const user = await userFromRequest(db, req);
+    if (user) {
+      let { data: cust } = await db.from('customers').select('id').eq('auth_user_id', user.id).maybeSingle();
+      if (!cust && user.email_confirmed_at && user.email?.toLowerCase() === String(c.email).trim().toLowerCase()) {
+        ({ data: cust } = await db.from('customers').update({ auth_user_id: user.id }).eq('email', user.email.toLowerCase()).is('auth_user_id', null).select('id').maybeSingle());
+      }
+      if (cust) await db.from('orders').update({ customer_id: cust.id }).eq('id', order.order_id);
+    }
+  } catch (e) {
+    console.error('[checkout] linking order to account failed:', (e as Error).message);
   }
 
   try {

@@ -1,16 +1,21 @@
 'use client';
 import { CartProvider } from '@/lib/cart';
-import { CatalogContext } from '@/lib/useProducts';
+import { CatalogContext, CategoriesContext } from '@/lib/useProducts';
 import { I18nProvider } from '@/lib/i18n/client';
 import type { Locale } from '@/lib/i18n/config';
 import type { Product } from '@/lib/products';
+import type { Category } from '@/lib/catalog';
 import CartDrawer from './CartDrawer';
+import AppPrompt from './AppPrompt';
+import { FilterProvider } from '@/lib/filter';
 
-export default function Providers({ products, lang, children }: { products: Product[]; lang: Locale; children: React.ReactNode }) {
+export default function Providers({ products, categories, lang, children }: { products: Product[]; categories: Category[]; lang: Locale; children: React.ReactNode }) {
   return (
     <I18nProvider lang={lang}>
       <CatalogContext.Provider value={products}>
-        <CartProvider>{children}<CartDrawer /></CartProvider>
+        <CategoriesContext.Provider value={categories}>
+          <FilterProvider><CartProvider>{children}<CartDrawer /><AppPrompt /></CartProvider></FilterProvider>
+        </CategoriesContext.Provider>
       </CatalogContext.Provider>
     </I18nProvider>
   );

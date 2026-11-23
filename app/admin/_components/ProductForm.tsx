@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, ImagePlus, Plus, X } from 'lucide-react';
+import { AlertTriangle, Check, ImagePlus, Plus, Trash2, X } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import { compose, prepare, scaleFor, type Prepared } from '@/lib/admin/compose';
 import { PRODUCT_STATUS_LABEL, VIEW_LABEL, type Category, type ProductRow, type ProductStatus, type View } from '@/lib/admin/types';
@@ -10,6 +10,9 @@ const SIZE_PRESETS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
 const COLOR_SUGGESTIONS = ['White', 'Black', 'Navy', 'Cream', 'Gray', 'Stone', 'Forest'];
 const VIEWS: View[] = ['front', 'side', 'back'];
 const key = (color: string, size: string) => `${color}__${size}`;
+const BUCKET = 'product-images';
+/** Path inside the storage bucket for a public image URL, or null for images bundled with the site. */
+const storagePath = (url?: string) => url?.match(/\/storage\/v1\/object\/public\/product-images\/(.+)$/)?.[1] ?? null;
 const slugify = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || `item-${Date.now().toString(36)}`;
 
 type Props = { product: ProductRow | null; categories: Category[]; nextSort: number; onClose: (saved: boolean) => void };
@@ -36,6 +39,8 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
   const [composed, setComposed] = useState<Partial<Record<View, Blob>>>({});
   const [previews, setPreviews] = useState<Partial<Record<View, string>>>({});
   const [warn, setWarn] = useState<Partial<Record<View, string>>>({});
+  const [info, setInfo] = useState<Partial<Record<View, string>>>({});
+  const [removed, setRemoved] = useState<Partial<Record<View, boolean>>>({});
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setF(s => ({ ...s, [k]: e.target.value }));
@@ -61,9 +66,42 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
     if (!file) return;
     if (!file.type.startsWith('image/')) { setWarn(w => ({ ...w, [view]: 'יש לבחור קובץ תמונה.' })); return; }
     if (file.size > 25 * 1024 * 1024) { setWarn(w => ({ ...w, [view]: 'הקובץ גדול מ־25MB.' })); return; }
+    setWarn(w => ({ ...w, [view]: '' }));
+    setInfo(m => ({ ...m, [view]: 'מעבדים את התמונה…' }));
     const p = await prepare(file);
-    setWarn(w => ({ ...w, [view]: p.transparent ? '' : 'לתמונה אין רקע שקוף — הבגד ייראה בתוך מלבן. עדיף PNG/WebP עם רקע שקוף.' }));
+    setWarn(w => ({ ...w, [view]: p.transparent || p.bgRemoved ? '' : 'לא הצלחנו להסיר את הרקע — הוא לא אחיד. צלמו/צרו את הבגד על רקע לבן או אפור חלק, או העלו PNG שקוף.' }));
+    setInfo(m => ({ ...m, [view]: p.bgRemoved ? 'הרקע הוסר אוטומטית — בדקו בתצוגה.' : '' }));
     setPrepared(s => ({ ...s, [view]: p }));
+    setRemoved(r => ({ ...r, [view]: false }));
+  }
+
+  /** Mark a photo for deletion (side / back). A just-picked photo is simply dropped. */
+  function removePhoto(view: View) {
+    if (prepared[view]) {
+      setPrepared(s => { const n = { ...s }; delete n[view]; return n; });
+      setInfo(m => ({ ...m, [view]: '' })); setWarn(w => ({ ...w, [view]: '' }));
+      if (!current[view]) return;
+    }
+    setRemoved(r => ({ ...r, [view]: true }));
+  }
+
+  async function deleteProduct() {
+    if (!product) return;
+    if (!window.confirm(`למחוק לצמיתות את "${product.name_he}"?\n\nהמוצר, התמונות והמלאי יימחקו ולא ניתן יהיה לשחזר אותם. הזמנות קודמות יישמרו כמו שהן.\n(אם רק רוצים להוריד מהאתר — עדיף "העברה לארכיון".)`)) return;
+    const db = supabaseBrowser();
+    try {
+      setBusy('מוחקים את התמונות…');
+      const { data: files } = await db.storage.from(BUCKET).list(product.id, { limit: 100 });
+      if (files?.length) await db.storage.from(BUCKET).remove(files.map(f => `${product.id}/${f.name}`));
+      setBusy('מוחקים את המוצר…');
+      const res = await db.from('products').delete().eq('id', product.id);
+      if (res.error) throw res.error;
+      setBusy('');
+      onClose(true);
+    } catch (e) {
+      setBusy('');
+      setError('המחיקה נכשלה: ' + ((e as { message?: string }).message ?? 'שגיאה לא ידועה'));
+    }
   }
 
   function addSize() { const s = newSize.trim().toUpperCase(); if (s && !sizes.includes(s)) setSizes([...sizes, s]); setNewSize(''); }
@@ -105,7 +143,7 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
         const blob = composed[v];
         if (!blob) continue;
         setBusy(`מעלים תמונת ${VIEW_LABEL[v]}…`);
-        const path = `${id}/${v}-${Date.now()}.webp`;
+        const path = `${id}/${v}-${Date.now()}-h2.webp`;
         const up = await db.storage.from('product-images').upload(path, blob, { contentType: 'image/webp', cacheControl: '31536000', upsert: false });
         if (up.error) throw up.error;
         const url = db.storage.from('product-images').getPublicUrl(path).data.publicUrl;
@@ -113,6 +151,18 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
         if (del.error) throw del.error;
         const ins = await db.from('product_images').insert({ product_id: id, view: v, url, alt_he: row.name_he, alt_en: row.name_en });
         if (ins.error) throw ins.error;
+        const old = storagePath(current[v]);
+        if (old) await db.storage.from(BUCKET).remove([old]);
+      }
+
+      // photos the admin deleted
+      for (const v of VIEWS) {
+        if (!removed[v] || composed[v] || v === 'front') continue;
+        setBusy(`מוחקים תמונת ${VIEW_LABEL[v]}…`);
+        const del = await db.from('product_images').delete().eq('product_id', id).eq('view', v);
+        if (del.error) throw del.error;
+        const old = storagePath(current[v]);
+        if (old) await db.storage.from(BUCKET).remove([old]);
       }
 
       setBusy('מעדכנים מלאי…');
@@ -152,9 +202,14 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
         </header>
 
         <h3>תמונות</h3>
-        <p className="adm-note">גררו או בחרו תמונה עם רקע שקוף. האתר חותך, מיישר ומוסיף וו קולב אוטומטית — שלוש הזוויות יוצאות באותו גודל.</p>
+        <p className="adm-note">גררו או בחרו תמונה — PNG שקוף, או בגד על רקע לבן/אפור חלק (הרקע יוסר אוטומטית). האתר חותך, מיישר ומוסיף קולב — שלוש הזוויות יוצאות באותו גודל. תמונות צד וגב אפשר למחוק עם סמל הפח; את תמונת החזית מחליפים בגרירת תמונה חדשה.</p>
         <div className="adm-photos">
-          {VIEWS.map(v => <PhotoDrop key={v} label={VIEW_LABEL[v]} required={v === 'front'} src={previews[v] ?? current[v]} isNew={!!previews[v]} warn={warn[v]} onPick={file => pick(v, file)} />)}
+          {VIEWS.map(v => (
+            <PhotoDrop key={v} label={VIEW_LABEL[v]} required={v === 'front'}
+              src={previews[v] ?? (removed[v] ? undefined : current[v])} isNew={!!previews[v]} warn={warn[v]} info={removed[v] ? 'התמונה תימחק בשמירה' : info[v]}
+              onPick={file => pick(v, file)}
+              onRemove={v !== 'front' && (previews[v] || (current[v] && !removed[v])) ? () => removePhoto(v) : undefined} />
+          ))}
         </div>
 
         <h3>פרטים</h3>
@@ -209,6 +264,7 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
 
         {error && <p className="adm-error" role="alert">{error}</p>}
         <footer className="adm-panel-foot">
+          {!isNew && <button className="adm-btn adm-btn-danger" disabled={!!busy} onClick={deleteProduct}><Trash2 size={15} /> מחיקה לצמיתות</button>}
           {!isNew && f.status !== 'archived' && <button className="adm-btn adm-btn-ghost" disabled={!!busy} onClick={() => setF(s => ({ ...s, status: 'archived' }))}>העברה לארכיון</button>}
           <span className="grow">{busy}</span>
           <button className="adm-btn" onClick={() => onClose(false)} disabled={!!busy}>ביטול</button>
@@ -219,7 +275,7 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
   );
 }
 
-function PhotoDrop({ label, required, src, isNew, warn, onPick }: { label: string; required: boolean; src?: string; isNew: boolean; warn?: string; onPick: (f: File | undefined) => void }) {
+function PhotoDrop({ label, required, src, isNew, warn, info, onPick, onRemove }: { label: string; required: boolean; src?: string; isNew: boolean; warn?: string; info?: string; onPick: (f: File | undefined) => void; onRemove?: () => void }) {
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
   return (
@@ -230,8 +286,10 @@ function PhotoDrop({ label, required, src, isNew, warn, onPick }: { label: strin
         {src ? <img src={src} alt={label} /> : <span><ImagePlus size={22} /> גררו לכאן או לחצו</span>}
         {isNew && <em>חדש</em>}
       </button>
+      {onRemove && <button type="button" className="adm-photo-del" onClick={onRemove} aria-label={`מחיקת תמונת ${label}`} title="מחיקת התמונה"><Trash2 size={14} /></button>}
       <span className="adm-photo-label">{label}{required && ' *'}</span>
       {warn && <span className="adm-warn"><AlertTriangle size={13} /> {warn}</span>}
+      {info && !warn && <span className="adm-info"><Check size={13} /> {info}</span>}
       <input ref={input} type="file" accept="image/png,image/webp,image/jpeg,image/avif" hidden onChange={e => { onPick(e.target.files?.[0]); e.target.value = ''; }} />
     </div>
   );

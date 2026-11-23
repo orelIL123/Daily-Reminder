@@ -1,9 +1,16 @@
 'use client';
 import { createContext, useContext } from 'react';
 import { initialProducts, type Product } from './products';
+import type { Category } from './catalog';
 
 /** The catalogue loaded on the server (Supabase) and handed to every client component. */
 export const CatalogContext = createContext<Product[]>(initialProducts);
+
+/** Categories for the menu, the category strip and the collection filter. */
+export const CategoriesContext = createContext<Category[]>([]);
+export function useCategories(): Category[] {
+  return useContext(CategoriesContext);
+}
 
 export function useProducts(): Product[] {
   return useContext(CatalogContext);

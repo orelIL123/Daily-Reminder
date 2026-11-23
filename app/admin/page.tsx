@@ -3,20 +3,22 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Session } from '@supabase/supabase-js';
-import { ExternalLink, LogOut, Package, ShoppingBag, Warehouse } from 'lucide-react';
+import { Bell, ExternalLink, LogOut, Package, ShoppingBag, Warehouse } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import { storeConfig } from '@/store.config';
 import Login from './_components/Login';
 import Orders from './_components/Orders';
 import Products from './_components/Products';
 import Inventory from './_components/Inventory';
+import Notifications from './_components/Notifications';
 import './admin.css';
 
-type Tab = 'orders' | 'products' | 'inventory';
+type Tab = 'orders' | 'products' | 'inventory' | 'notifications';
 const TABS: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: 'orders', label: 'הזמנות', icon: ShoppingBag },
   { id: 'products', label: 'מוצרים', icon: Package },
   { id: 'inventory', label: 'מלאי', icon: Warehouse },
+  { id: 'notifications', label: 'התראות', icon: Bell },
 ];
 
 export default function AdminPage() {
@@ -76,6 +78,7 @@ export default function AdminPage() {
         {tab === 'orders' && <Orders />}
         {tab === 'products' && <Products />}
         {tab === 'inventory' && <Inventory />}
+        {tab === 'notifications' && <Notifications />}
       </main>
     </div>
   );

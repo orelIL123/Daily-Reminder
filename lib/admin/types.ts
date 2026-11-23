@@ -19,7 +19,7 @@ export type OrderRow = {
   shipping_address: { street?: string; city?: string; zip?: string };
   locale: string; status: OrderStatus; subtotal: number; discount_total: number; shipping_total: number; total: number;
   discount_code: string | null; paid_at: string | null; reserved_until: string | null;
-  customer_note: string; admin_note: string; created_at: string;
+  customer_note: string; admin_note: string; tracking_number?: string; created_at: string;
   order_items: OrderItem[]; order_events?: OrderEvent[];
 };
 

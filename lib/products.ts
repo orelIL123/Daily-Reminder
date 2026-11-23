@@ -6,6 +6,8 @@ export type Product = {
   nameEn?: string;
   descriptionEn?: string;
   categoryHe?: string;
+  /** Category slug from Supabase — used by the category filters. */
+  categorySlug?: string;
   compareAtPrice?: number;
   /** Present when the catalogue comes from Supabase: real stock per size × color. */
   variants?: Variant[];

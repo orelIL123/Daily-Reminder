@@ -1,0 +1,6 @@
+_old
+.git
+.next
+node_modules
+*.tsbuildinfo
+_demo

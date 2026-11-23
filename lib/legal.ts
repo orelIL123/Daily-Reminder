@@ -1,0 +1,50 @@
+import { storeConfig } from '@/store.config';
+
+/*
+ * Hebrew legal pages. Edit the text here; each page is a title + sections.
+ * Pages marked draft show a short notice until the final wording is in.
+ */
+export type LegalPage = { title: string; updated: string; draft?: boolean; sections: { h?: string; p: string[] }[] };
+
+const { contact, commerce } = storeConfig;
+const contactLine = `אימייל: ${contact.email} · טלפון: ${contact.phone}`;
+
+export const LEGAL: Record<string, LegalPage> = {
+  terms: {
+    title: 'תקנון האתר', updated: 'נובמבר 2026', draft: true,
+    sections: [
+      { p: ['התקנון המלא יפורסם כאן בקרוב. עד אז, לכל שאלה על הזמנה, תשלום או משלוח אפשר לפנות אלינו.'] },
+      { h: 'יצירת קשר', p: [contactLine] },
+    ],
+  },
+  shipping: {
+    title: 'משלוחים', updated: 'נובמבר 2026',
+    sections: [
+      { p: ['המשלוחים מתבצעים בתוך ישראל בלבד. אין משלוחים לחו״ל.'] },
+      { h: 'עלות', p: [`משלוח חינם בהזמנה מעל ₪${commerce.freeShippingFrom}. בהזמנה נמוכה יותר דמי המשלוח הם ₪${commerce.shippingPrice}.`] },
+      { h: 'זמני אספקה', p: ['אחרי ההזמנה ניצור איתכם קשר לתיאום המשלוח. לשאלות על הזמנה קיימת — כתבו לנו עם מספר ההזמנה.'] },
+      { h: 'יצירת קשר', p: [contactLine] },
+    ],
+  },
+  returns: {
+    title: 'החזרות, החלפות וביטול עסקה', updated: 'נובמבר 2026', draft: true,
+    sections: [
+      { p: ['אפשר לבטל עסקה ולהחזיר פריט בתוך 14 יום, בהתאם לחוק הגנת הצרכן. הנוסח המלא של המדיניות (החלפות, דמי משלוח והחזר) יתפרסם כאן בקרוב.'] },
+      { h: 'איך מבקשים החזרה או החלפה', p: [`כתבו לנו עם מספר ההזמנה: ${contactLine}`] },
+    ],
+  },
+  privacy: {
+    title: 'מדיניות פרטיות', updated: 'נובמבר 2026', draft: true,
+    sections: [
+      { p: ['אנחנו שומרים את הפרטים שמסרתם בהזמנה (שם, אימייל, טלפון וכתובת) כדי לטפל בהזמנה ובמשלוח. אם בחרתם בכך, נשלח לכם עדכונים על קולקציות חדשות — ואפשר להפסיק בכל רגע.', 'התשלום מתבצע בעמוד המאובטח של חברת הסליקה; פרטי כרטיס האשראי אינם נשמרים באתר.', 'התראות דחיפה נשלחות רק למכשירים שאישרו אותן, ואפשר לבטל אותן בהגדרות הדפדפן או הטלפון.'] },
+      { h: 'יצירת קשר', p: [contactLine] },
+    ],
+  },
+  accessibility: {
+    title: 'הצהרת נגישות', updated: 'נובמבר 2026', draft: true,
+    sections: [
+      { p: ['אנחנו פועלים כדי שהאתר יהיה נגיש לכל המשתמשים: ניווט במקלדת, טקסט חלופי לתמונות, ניגודיות קריאה ותמיכה בהעדפת "הפחתת תנועה".', 'נתקלתם בבעיה? נשמח לשמוע ולתקן.'] },
+      { h: 'רכז/ת נגישות', p: [contactLine] },
+    ],
+  },
+};

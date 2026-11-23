@@ -9,7 +9,7 @@ import { formatPrice } from '@/lib/money';
 
 type I18n = {
   lang: Locale;
-  dir: 'rtl' | 'ltr';
+  dir: 'ltr';
   t: Dictionary;
   /** Store copy from store.config in the current language. */
   tr: (v: L) => string;
@@ -31,12 +31,12 @@ export function I18nProvider({ lang, children }: { lang: Locale; children: React
       lang,
       dir: dirOf(lang),
       t,
-      tr: v => v[lang],
+      tr: v => v.en,
       href: path => localePath(lang, path),
-      price: n => formatPrice(n, lang),
-      name: p => (lang === 'en' ? p.nameEn || p.name : p.name),
-      description: p => (lang === 'en' ? p.descriptionEn || p.description : p.description),
-      category: p => (lang === 'en' ? p.category : p.categoryHe || p.category),
+      price: n => formatPrice(n),
+      name: p => p.nameEn || p.name,
+      description: p => p.descriptionEn || p.description,
+      category: p => p.category || p.categoryHe || '',
       color: c => t.colors[c] ?? c,
     };
   }, [lang]);

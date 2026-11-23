@@ -7,6 +7,7 @@ import type { Product } from '@/lib/products';
 import { useI18n } from '@/lib/i18n/client';
 import { imageFor } from '@/lib/views';
 import { storeConfig } from '@/store.config';
+import type { FlightOrigin } from '@/lib/flight';
 
 /*
  * Option B — a straight shop rail.
@@ -19,6 +20,7 @@ import { storeConfig } from '@/store.config';
 
 const IMAGE_RATIO = 455 / 360;
 const HOOK_Y = 0.028;
+const SHADOW_ROOM = 60; // extra track height so the soft drop-shadows are not cut off
 
 function sizes(w: number) {
   if (w < 600) return { slot: 58, open: 176, gw: 158 };
@@ -28,17 +30,18 @@ function sizes(w: number) {
 
 type Props = {
   products: Product[];
-  onOpen: (p: Product) => void;
+  onOpen: (p: Product, origin?: FlightOrigin) => void;
+  /** The piece that is flying into the product view (hidden on the rail meanwhile). */
+  hiddenId?: string | null;
   activeId?: string | null;
   onActiveChange?: (id: string | null) => void;
   /** Keep the last piece turned to the front when the pointer leaves. */
   persistent?: boolean;
-  featuredId?: string;
   showLabels?: boolean;
   showHint?: boolean;
 };
 
-export default function FlatRail({ products, onOpen, activeId, onActiveChange, persistent = false, featuredId, showLabels = true, showHint = true }: Props) {
+export default function FlatRail({ products, onOpen, activeId, onActiveChange, persistent = false, hiddenId, showLabels = true, showHint = true }: Props) {
   const [dims, setDims] = useState(() => sizes(1440));
   const { t, name, price } = useI18n();
   const [canHover, setCanHover] = useState(true);
@@ -77,10 +80,12 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
 
   const gh = dims.gw * IMAGE_RATIO;
 
-  function tap(p: Product) {
+  function tap(p: Product, el: HTMLElement) {
     if (drag.current.moved) return;
-    if (canHover || active === p.id) onOpen(p);
-    else setActive(p.id);
+    if (canHover || active === p.id) {
+      const img = el.querySelector<HTMLImageElement>('.fr-img-face');
+      onOpen(p, img ? { rect: img.getBoundingClientRect(), src: img.currentSrc || img.src } : undefined);
+    } else setActive(p.id);
   }
 
   // desktop: drag the rail sideways
@@ -102,7 +107,7 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
       <div
         ref={trackRef}
         className="flatrail-track"
-        style={{ height: gh + (showLabels ? 40 : 24) }}
+        style={{ height: gh + (showLabels ? 40 : 24) + SHADOW_ROOM, marginBottom: -SHADOW_ROOM }}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag}
       >
         <div className="flatrail-items">
@@ -116,13 +121,13 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
                 key={p.id}
                 data-id={p.id}
                 type="button"
-                className={`fr-item ${open ? 'is-open' : ''} ${isSoldOut(p) ? 'is-soldout' : ''}`}
+                className={`fr-item ${open ? 'is-open' : ''} ${isSoldOut(p) ? 'is-soldout' : ''} ${hiddenId === p.id ? 'is-away' : ''}`}
                 animate={{ width: open ? dims.open : dims.slot }}
                 transition={{ type: 'spring', stiffness: 220, damping: 26 }}
                 style={{ height: gh, zIndex: open ? 5 : 1 }}
                 onMouseEnter={() => canHover && !drag.current.down && setActive(p.id)}
                 onFocus={e => { if (canHover || e.currentTarget.matches(':focus-visible')) setActive(p.id); }}
-                onClick={() => tap(p)}
+                onClick={e => tap(p, e.currentTarget)}
                 aria-label={`${name(p)}, ${isSoldOut(p) ? t.product.soldOut : price(p.price)}`}
                 aria-current={open ? 'true' : undefined}
               >
@@ -141,11 +146,6 @@ export default function FlatRail({ products, onOpen, activeId, onActiveChange, p
                     transition={{ type: 'spring', stiffness: 160, damping: 22 }}
                   />
                   {isSoldOut(p) && <span className="soldout-tag" aria-hidden="true">{t.product.soldOut}</span>}
-                  {featuredId === p.id && (
-                    <motion.span className="fr-badge" initial={false} animate={{ opacity: open ? 1 : 0, scale: open ? 1 : 0.9 }}>
-                      ★ {t.rail.featured}
-                    </motion.span>
-                  )}
                 </span>
                 {showLabels && (
                   <motion.span className="fr-label" initial={false} animate={{ opacity: open ? 1 : 0, y: open ? 0 : 6 }}>

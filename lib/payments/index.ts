@@ -17,7 +17,7 @@ import { localePath, type Locale } from '@/lib/i18n/config';
 export type PaymentRequest = { orderId: string; orderNumber: number; total: number; currency: string; email: string; name: string; phone: string };
 export type PaymentSession = { redirectUrl: string };
 
-export async function createPaymentSession(req: PaymentRequest, origin: string, locale: Locale = 'he'): Promise<PaymentSession> {
+export async function createPaymentSession(req: PaymentRequest, origin: string, locale: Locale = 'en'): Promise<PaymentSession> {
   const provider = process.env.PAYMENT_PROVIDER ?? 'demo';
   switch (provider) {
     case 'demo':

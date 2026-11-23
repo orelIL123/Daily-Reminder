@@ -1,21 +1,15 @@
-export const locales = ['he', 'en'] as const;
+/*
+ * The storefront is English only. (The admin, terms and legal pages are in Hebrew and live outside [lang].)
+ * The [lang] route segment is kept so a language can be added later without moving files.
+ */
+export const locales = ['en'] as const;
 export type Locale = (typeof locales)[number];
-
-/** Hebrew is the main language: it lives at "/", English at "/en". */
-export const defaultLocale: Locale = 'he';
+export const defaultLocale: Locale = 'en';
 
 export const isLocale = (v: string | undefined): v is Locale => !!v && (locales as readonly string[]).includes(v);
-export const dirOf = (l: Locale) => (l === 'he' ? 'rtl' : 'ltr');
+export const dirOf = (_l: Locale) => 'ltr' as const;
 
-/** Path for a locale: Hebrew has no prefix, English is under /en. */
-export function localePath(l: Locale, path = '/') {
-  const clean = path.startsWith('/') ? path : `/${path}`;
-  if (l === defaultLocale) return clean;
-  return clean === '/' ? `/${l}` : `/${l}${clean}`;
-}
-
-/** Strip the locale prefix from a pathname. */
-export function stripLocale(pathname: string) {
-  const m = pathname.match(/^\/(en|he)(\/.*)?$/);
-  return m ? (m[2] || '/') : pathname;
+/** Path for a locale. English has no prefix. */
+export function localePath(_l: Locale, path = '/') {
+  return path.startsWith('/') ? path : `/${path}`;
 }

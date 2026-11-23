@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import Providers from '@/components/Providers';
-import { themeInitScript } from '@/lib/theme';
 import { storeConfig, RAIL_FINISHES } from '@/store.config';
-import { getCatalog } from '@/lib/catalog';
+import { getCatalog, getCategories } from '@/lib/catalog';
 import { dictionaries } from '@/lib/i18n/dictionaries';
-import { dirOf, isLocale, locales, localePath } from '@/lib/i18n/config';
+import { isLocale, locales } from '@/lib/i18n/config';
+import '@fontsource-variable/bodoni-moda/opsz.css';
+import '@fontsource-variable/bodoni-moda/opsz-italic.css';
+import '@fontsource-variable/jost';
 import '../globals.css';
 
 // Re-read the catalogue from Supabase at most once a minute.
@@ -20,23 +22,27 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   if (!isLocale(lang)) return {};
   return {
     title: `${storeConfig.brand.name} — ${dictionaries[lang].meta.titleSuffix}`,
-    description: storeConfig.brand.tagline[lang],
-    alternates: { languages: { he: localePath('he'), en: localePath('en') } },
-    openGraph: { locale: lang === 'he' ? 'he_IL' : 'en_US' },
+    description: storeConfig.brand.tagline.en,
+    manifest: '/manifest.webmanifest',
+    appleWebApp: { capable: true, title: storeConfig.app.shortName, statusBarStyle: 'default' },
+    icons: {
+      icon: [{ url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+      apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180' }],
+    },
+    openGraph: { locale: 'en_US', siteName: storeConfig.brand.name },
   };
 }
 
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#f6f2ec' };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: storeConfig.app.themeColor, viewportFit: 'cover' };
 
 export default async function RootLayout({ children, params }: Readonly<{ children: React.ReactNode; params: Promise<{ lang: string }> }>) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
-  const { products } = await getCatalog();
+  const [{ products }, categories] = await Promise.all([getCatalog(), getCategories()]);
   return (
-    <html lang={lang} dir={dirOf(lang)} suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: themeInitScript }} /></head>
+    <html lang="en" dir="ltr">
       <body style={{ ['--rail-finish' as string]: RAIL_FINISHES[storeConfig.rail.finish] }}>
-        <Providers products={products} lang={lang}>{children}</Providers>
+        <Providers products={products} categories={categories} lang={lang}>{children}</Providers>
       </body>
     </html>
   );

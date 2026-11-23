@@ -10,6 +10,27 @@ type Row = {
   variants: { id: string; size: string; color: string; stock: number; price_override: number | null; sort_order: number; is_active: boolean }[];
 };
 
+export type Category = { slug: string; name: string; nameHe: string };
+
+const FALLBACK_CATEGORIES: Category[] = [
+  { slug: 'tees', name: 'T-Shirts', nameHe: 'טישרטים' },
+  { slug: 'layered-tees', name: 'Layered Tees', nameHe: 'חולצות שני שרוולים' },
+  { slug: 'hoodies', name: 'Hoodies', nameHe: 'קפוצ׳ונים' },
+  { slug: 'pants', name: 'Pants', nameHe: 'מכנסיים' },
+  { slug: 'hats', name: 'Hats', nameHe: 'כובעים' },
+  { slug: 'kippot', name: 'Kippot', nameHe: 'כיפות' },
+  { slug: 'shoes', name: 'Shoes', nameHe: 'נעליים' },
+];
+
+/** Categories shown in the menu and the category strip. */
+export async function getCategories(): Promise<Category[]> {
+  const db = supabasePublic();
+  if (!db) return FALLBACK_CATEGORIES;
+  const { data, error } = await db.from('categories').select('slug, name_en, name_he').eq('is_active', true).eq('show_in_nav', true).order('sort_order');
+  if (error || !data) return FALLBACK_CATEGORIES;
+  return data.map(c => ({ slug: c.slug, name: c.name_en, nameHe: c.name_he }));
+}
+
 /** Active catalogue from Supabase. Falls back to the bundled demo products if the database is unreachable. */
 export async function getCatalog(): Promise<{ products: Product[]; source: 'supabase' | 'fallback' }> {
   const db = supabasePublic();
@@ -40,6 +61,7 @@ export async function getCatalog(): Promise<{ products: Product[]; source: 'supa
       nameEn: r.name_en,
       category: r.category?.name_en ?? '',
       categoryHe: r.category?.name_he,
+      categorySlug: r.category?.slug,
       price: Number(r.price),
       compareAtPrice: r.compare_at_price == null ? undefined : Number(r.compare_at_price),
       frontImage: img('front') ?? '',

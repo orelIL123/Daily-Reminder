@@ -1,23 +1,23 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Mail, Phone } from 'lucide-react';
 import Rail3D from './Rail3D';
 import FlatRail from './FlatRail';
 import RailShowcase from './RailShowcase';
 import ProductSheet from './ProductSheet';
 import Editorial from './Editorial';
 import NotifyButton from './NotifyButton';
-import { isSoldOut, useCategories, useProducts } from '@/lib/useProducts';
+import ProductCard from './ProductCard';
+import SiteFooter from './SiteFooter';
+import { useCategories, useProducts } from '@/lib/useProducts';
 import { useFilter } from '@/lib/filter';
 import { useI18n } from '@/lib/i18n/client';
 import type { Product } from '@/lib/products';
 import type { FlightOrigin } from '@/lib/flight';
 import { storeConfig } from '@/store.config';
 
-const { brand, hero, rail, contact } = storeConfig;
+const { brand, hero, rail } = storeConfig;
 const heroStyle = hero.background
   ? ({ ['--hero-bg' as string]: `url('${hero.background.desktop}')`, ['--hero-bg-m' as string]: `url('${hero.background.mobile}')` } as React.CSSProperties)
   : undefined;
@@ -35,7 +35,7 @@ export default function Storefront() {
   const openWith = useCallback((p: Product, from?: FlightOrigin) => { setOrigin(reduce ? null : from ?? null); setOpen(p); }, [reduce]);
   const hiddenId = open && origin ? open.id : null;
   const current = products[active] ?? products[0];
-  const { t, tr, name, price, href } = useI18n();
+  const { t, tr, name, price } = useI18n();
 
   const shown = useMemo(() => (category ? products.filter(p => p.categorySlug === category) : products), [products, category]);
   const activeCat = categories.find(c => c.slug === category);
@@ -86,20 +86,7 @@ export default function Storefront() {
           </div>
         ) : (
           <div className="grid">
-            {shown.map(p => (
-              <button key={p.id} className={`card ${isSoldOut(p) ? 'is-soldout' : ''}`} onClick={() => openWith(p)}>
-                <div className="card-img">
-                  {isSoldOut(p) && <span className="soldout-tag">{t.product.soldOut}</span>}
-                  <img src={p.frontImage} alt="" loading="lazy" />
-                  {(p.backImage || p.sideImage) && <img className="card-img-alt" src={p.backImage || p.sideImage} alt="" loading="lazy" />}
-                </div>
-                <div className="card-meta">
-                  <strong>{name(p)}</strong>
-                  <span>{isSoldOut(p) ? <s>{price(p.price)}</s> : price(p.price)}</span>
-                </div>
-                <small>{t.collection.colors(p.colors.length)}</small>
-              </button>
-            ))}
+            {shown.map(p => <ProductCard key={p.id} product={p} onOpen={openWith} />)}
           </div>
         )}
       </section>
@@ -108,26 +95,7 @@ export default function Storefront() {
         <p>{tr(brand.footerNote)}</p>
       </section>
 
-      <footer className="site-footer">
-        <div className="footer-brand">
-          <strong className="brand">{brand.name}<span>.</span></strong>
-          <small>© {new Date().getFullYear()} {brand.name}</small>
-        </div>
-        <div className="footer-contact">
-          <span>{t.footer.followUs}</span>
-          <a href={`mailto:${contact.email}`}><Mail size={14} strokeWidth={1.5} /> {contact.email}</a>
-          <a href={`tel:${contact.phoneIntl}`}><Phone size={14} strokeWidth={1.5} /> {contact.phone}</a>
-          <NotifyButton compact />
-        </div>
-        <nav>
-          <Link href="/legal/shipping">{t.footer.shipping}</Link>
-          <Link href="/legal/returns">{t.footer.returns}</Link>
-          <Link href="/legal/terms">{t.footer.terms}</Link>
-          <Link href="/legal/privacy">{t.footer.privacy}</Link>
-          <Link href="/legal/accessibility">{t.footer.accessibility}</Link>
-          <Link href={href('/account')}>{t.nav.account}</Link>
-        </nav>
-      </footer>
+      <SiteFooter />
 
       <ProductSheet product={open} origin={origin} onClose={close} />
     </>

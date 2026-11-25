@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Jost:wght@300;400;500;600&family=Heebo:wght@400;500;600;700&display=swap');
-
 :root {
   color-scheme: light;
   --ink: #141414;
@@ -181,7 +179,7 @@ img { display: block; max-width: 100%; }
 .focus-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 30px 26px rgba(40,30,60,.2)); }
 .focus-img.is-mirrored { transform: scaleX(-1); }
 .focus-info { width: 100%; display: grid; justify-items: center; gap: 14px; padding: 18px 22px 22px; border-radius: 22px; background: rgba(255,255,255,.88); box-shadow: 0 24px 60px -30px rgba(40,30,60,.35); }
-.focus-info h2 { margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; text-align: center; }
+.focus-info .focus-title { margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; text-align: center; }
 .focus-price { margin: -8px 0 0; font-size: 14px; color: #4b4b50; }
 .seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: 172px; height: 36px; padding: 3px; border-radius: 999px; border: 1px solid rgba(0,0,0,.14); background: #fff; }
 .seg-pill { position: absolute; top: 3px; bottom: 3px; width: calc(50% - 3px); border-radius: 999px; background: var(--ink); }
@@ -326,12 +324,12 @@ img { display: block; max-width: 100%; }
   margin: 18px 0 0; font-family: var(--font-display); font-weight: 500;
   font-size: clamp(46px, 6.4vw, 92px); line-height: .98; letter-spacing: -.01em; color: var(--sc-ink);
 }
-.showcase-head h2 em { font-style: italic; font-weight: 500; }
+.showcase-head h2 em { font-style: var(--display-italic, italic); font-weight: 500; }
 .showcase-ornament { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 16px auto 0; color: var(--sc-gold); }
 .showcase-ornament span { width: 92px; height: 1px; background: linear-gradient(90deg, transparent, var(--sc-gold)); }
 .showcase-ornament span:last-child { transform: scaleX(-1); }
 .showcase-ornament b { font-size: 14px; font-weight: 400; line-height: 1; }
-.showcase-sub { margin: 16px 0 0; font-family: var(--font-display); font-style: italic; font-size: clamp(20px, 2vw, 26px); color: var(--sc-ink); opacity: .9; }
+.showcase-sub { margin: 16px 0 0; font-family: var(--font-display); font-style: var(--display-italic, italic); font-size: clamp(20px, 2vw, 26px); color: var(--sc-ink); opacity: .9; }
 .showcase-steps { margin: 12px 0 0; font-size: 10.5px; letter-spacing: .34em; text-transform: uppercase; color: var(--sc-sub); }
 
 .showcase-stage { position: relative; margin-top: clamp(30px, 5vh, 52px); }
@@ -417,9 +415,9 @@ img { display: block; max-width: 100%; }
 .hero-caption-inner h2 { font-weight: 600; font-size: clamp(30px, 3.4vw, 42px); letter-spacing: 0; }
 .hero-caption-inner p, .showcase-caption-inner p { font-weight: 300; font-size: 16px; }
 .section-head h2 { font-weight: 500; font-size: clamp(30px, 3.2vw, 42px); letter-spacing: 0; }
-.about p { font-weight: 500; font-style: italic; font-size: clamp(24px, 2.8vw, 34px); line-height: 1.3; letter-spacing: 0; }
+.about p { font-weight: 500; font-style: var(--display-italic, italic); font-size: clamp(24px, 2.8vw, 34px); line-height: 1.3; letter-spacing: 0; }
 .card-meta strong { font-weight: 400; }
-.focus-info h2 { font-weight: 600; font-size: 24px; letter-spacing: .08em; }
+.focus-info .focus-title { font-weight: 600; font-size: 24px; letter-spacing: .08em; }
 .checkout-form h1 { font-weight: 500; font-size: 38px; letter-spacing: 0; }
 .success h1 { font-weight: 500; font-size: 56px; letter-spacing: 0; }
 .fr-label strong { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
@@ -503,15 +501,15 @@ img { display: block; max-width: 100%; }
 /* ---------- typography: Bodoni Moda + Jost ---------- */
 .brand { font-family: var(--font-display); font-weight: 500; font-size: 19px; letter-spacing: .18em; text-transform: uppercase; }
 .brand span { margin-left: -.12em; }
-.hero-caption-inner h2 { font-weight: 400; font-size: clamp(28px, 3vw, 38px); font-style: italic; }
+.hero-caption-inner h2 { font-weight: 400; font-size: clamp(28px, 3vw, 38px); font-style: var(--display-italic, italic); }
 .showcase-head h2, .section-head h2 { font-weight: 400; }
 .section-head h2 { font-size: clamp(28px, 3vw, 38px); }
-.showcase-caption-inner h3 { font-weight: 400; font-style: italic; font-size: clamp(26px, 2.6vw, 34px); }
+.showcase-caption-inner h3 { font-weight: 400; font-style: var(--display-italic, italic); font-size: clamp(26px, 2.6vw, 34px); }
 .about p { font-weight: 400; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.4; }
-.focus-info h2 { font-family: var(--font-display); font-weight: 500; font-size: 22px; letter-spacing: .06em; }
+.focus-info .focus-title { font-family: var(--font-display); font-weight: 500; font-size: 22px; letter-spacing: .06em; }
 .fr-label strong { font-weight: 500; font-size: 15px; }
 .checkout-form h1 { font-weight: 400; font-size: 36px; }
-.success h1 { font-weight: 400; font-style: italic; font-size: 54px; }
+.success h1 { font-weight: 400; font-style: var(--display-italic, italic); font-size: 54px; }
 
 /* ---------- header + menu ---------- */
 .header-start { display: flex; align-items: center; gap: 22px; }
@@ -526,7 +524,7 @@ img { display: block; max-width: 100%; }
 .menu-panel nav button { display: flex; align-items: center; gap: 14px; padding: 12px 12px; border-radius: 12px; font-family: var(--font-display); font-size: 21px; text-align: left; transition: background .2s; }
 .menu-panel nav button:hover { background: #f6f5f3; }
 .menu-panel nav svg { color: var(--accent); }
-.menu-panel .menu-all { font-style: italic; }
+.menu-panel .menu-all { font-style: var(--display-italic, italic); }
 .menu-panel footer { margin-top: auto; display: grid; gap: 10px; padding: 20px 22px 26px; border-top: 1px solid var(--line); font-size: 13px; color: var(--sub); }
 .menu-panel footer a:hover { color: var(--ink); }
 
@@ -550,7 +548,7 @@ img { display: block; max-width: 100%; }
 .cat-chips button:hover { border-color: var(--ink); }
 .cat-chips button.is-on { background: var(--ink); color: #fff; border-color: var(--ink); }
 .collection-empty { display: grid; justify-items: center; gap: 18px; padding: 60px 20px; border-radius: var(--radius); background: var(--studio); text-align: center; color: var(--sub); }
-.collection-empty p { margin: 0; max-width: 380px; font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--ink); }
+.collection-empty p { margin: 0; max-width: 380px; font-family: var(--font-display); font-style: var(--display-italic, italic); font-size: 20px; color: var(--ink); }
 
 /* ---------- editorial: the collection mood board ---------- */
 .editorial {
@@ -558,7 +556,7 @@ img { display: block; max-width: 100%; }
   max-width: 1320px; margin: 0 auto; padding: clamp(70px, 10vh, 120px) clamp(18px, 4vw, 56px);
 }
 .editorial-eyebrow { margin: 0; font-size: 11px; letter-spacing: .4em; text-transform: uppercase; color: var(--accent); }
-.editorial h2 { margin: 14px 0 0; font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: clamp(38px, 4.2vw, 62px); line-height: 1.02; }
+.editorial h2 { margin: 14px 0 0; font-family: var(--font-display); font-weight: 400; font-style: var(--display-italic, italic); font-size: clamp(38px, 4.2vw, 62px); line-height: 1.02; }
 .editorial-text { margin: 22px 0 0; max-width: 380px; font-size: 15px; line-height: 1.7; font-weight: 300; color: #45433f; }
 .editorial-steps { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 26px 0 0; padding: 18px 0 0; border-top: 1px solid var(--line); font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--sub); }
 .editorial-steps li { counter-increment: step; }
@@ -588,7 +586,7 @@ img { display: block; max-width: 100%; }
 @media (min-width: 900px) {
   .focus-card { width: min(980px, 100%); grid-template-columns: 1fr 1fr; }
   .focus-info { justify-items: start; padding: 30px 32px 28px; }
-  .focus-info h2, .focus-price { text-align: left; }
+  .focus-info .focus-title, .focus-price { text-align: left; }
   .focus-note { justify-self: center; }
 }
 
@@ -677,3 +675,20 @@ img { display: block; max-width: 100%; }
 .legal-draft { padding: 12px 16px; border-radius: 12px; background: #fff; border: 1px solid var(--line); font-size: 14px !important; }
 .legal-nav { display: flex; flex-wrap: wrap; gap: 10px 22px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 14px; color: var(--sub); }
 .legal-nav a[aria-current] { color: var(--ink); font-weight: 600; }
+
+/* headings keep their real weights when the chosen font has only one */
+h1, h2, h3, .brand { font-synthesis-weight: none; }
+
+/* ---------- product + collection pages ---------- */
+a.card { display: block; }
+.footer-cats { flex-basis: 100%; }
+.crumbs { display: flex; flex-wrap: wrap; gap: 8px; padding: 18px clamp(18px, 4vw, 56px) 0; font-size: 12px; color: var(--sub); }
+.crumbs a:hover { color: var(--ink); }
+.crumbs i { font-style: normal; opacity: .4; }
+.crumbs span { color: var(--ink); }
+.pdp { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 440px); gap: clamp(24px, 5vw, 80px); align-items: center; justify-content: center; padding: 28px clamp(18px, 4vw, 56px) 0; }
+.pdp-visual { justify-self: center; width: min(520px, 86vw); }
+.pdp-img { transition: opacity .35s var(--ease); }
+.collection-page { padding-top: 36px; min-height: 50vh; }
+.section-head h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(32px, 4vw, 48px); }
+@media (max-width: 860px) { .pdp { grid-template-columns: 1fr; padding-top: 14px; } .pdp > .focus-info { justify-self: center; max-width: 440px; } }

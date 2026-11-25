@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Session } from '@supabase/supabase-js';
-import { Bell, ExternalLink, LogOut, Package, ShoppingBag, Warehouse } from 'lucide-react';
+import { BarChart3, Bell, ExternalLink, LogOut, Package, Search, ShoppingBag, Type, Warehouse } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import { storeConfig } from '@/store.config';
 import Login from './_components/Login';
@@ -11,20 +11,26 @@ import Orders from './_components/Orders';
 import Products from './_components/Products';
 import Inventory from './_components/Inventory';
 import Notifications from './_components/Notifications';
+import Analytics from './_components/Analytics';
+import Design from './_components/Design';
+import Seo from './_components/Seo';
 import './admin.css';
 
-type Tab = 'orders' | 'products' | 'inventory' | 'notifications';
+type Tab = 'analytics' | 'orders' | 'products' | 'inventory' | 'notifications' | 'design' | 'seo';
 const TABS: { id: Tab; label: string; icon: typeof Package }[] = [
+  { id: 'analytics', label: 'נתונים', icon: BarChart3 },
   { id: 'orders', label: 'הזמנות', icon: ShoppingBag },
   { id: 'products', label: 'מוצרים', icon: Package },
   { id: 'inventory', label: 'מלאי', icon: Warehouse },
   { id: 'notifications', label: 'התראות', icon: Bell },
+  { id: 'design', label: 'עיצוב', icon: Type },
+  { id: 'seo', label: 'SEO וגוגל', icon: Search },
 ];
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<Tab>('orders');
+  const [tab, setTab] = useState<Tab>('analytics');
 
   useEffect(() => {
     const db = supabaseBrowser();
@@ -75,10 +81,13 @@ export default function AdminPage() {
         </div>
       </aside>
       <main className="adm-main">
+        {tab === 'analytics' && <Analytics />}
         {tab === 'orders' && <Orders />}
         {tab === 'products' && <Products />}
         {tab === 'inventory' && <Inventory />}
         {tab === 'notifications' && <Notifications />}
+        {tab === 'design' && <Design />}
+        {tab === 'seo' && <Seo />}
       </main>
     </div>
   );

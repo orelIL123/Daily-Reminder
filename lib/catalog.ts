@@ -4,7 +4,7 @@ import { supabasePublic } from './supabase/public';
 
 type Row = {
   id: string; slug: string; name_he: string; name_en: string; description_he: string; description_en: string;
-  price: number; compare_at_price: number | null; sort_order: number;
+  price: number; compare_at_price: number | null; sort_order: number; seo_title: string; seo_description: string; updated_at: string;
   category: { slug: string; name_he: string; name_en: string } | null;
   images: { view: 'front' | 'side' | 'back' | 'detail'; url: string; sort_order: number }[];
   variants: { id: string; size: string; color: string; stock: number; price_override: number | null; sort_order: number; is_active: boolean }[];
@@ -38,7 +38,7 @@ export async function getCatalog(): Promise<{ products: Product[]; source: 'supa
 
   const { data, error } = await db
     .from('products')
-    .select(`id, slug, name_he, name_en, description_he, description_en, price, compare_at_price, sort_order,
+    .select(`id, slug, name_he, name_en, description_he, description_en, price, compare_at_price, sort_order, seo_title, seo_description, updated_at,
              category:categories(slug, name_he, name_en),
              images:product_images(view, url, sort_order),
              variants:product_variants(id, size, color, stock, price_override, sort_order, is_active)`)
@@ -69,6 +69,9 @@ export async function getCatalog(): Promise<{ products: Product[]; source: 'supa
       backImage: img('back'),
       description: r.description_he,
       descriptionEn: r.description_en,
+      seoTitle: r.seo_title || undefined,
+      seoDescription: r.seo_description || undefined,
+      updatedAt: r.updated_at,
       colors: uniq(variants.map(v => v.color)),
       sizes: uniq(variants.map(v => v.size)),
       variants: variants.map(v => ({ id: v.id, size: v.size, color: v.color, stock: v.stock })),

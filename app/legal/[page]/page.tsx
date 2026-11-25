@@ -9,7 +9,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ page: string }> }) {
   const { page } = await params;
-  return { title: `${LEGAL[page]?.title ?? ''} — ${storeConfig.brand.name}` };
+  return { title: `${LEGAL[page]?.title ?? ''} — ${storeConfig.brand.name}`, alternates: { canonical: `/legal/${page}` } };
 }
 
 export default async function LegalPage({ params }: { params: Promise<{ page: string }> }) {

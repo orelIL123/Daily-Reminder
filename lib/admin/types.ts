@@ -9,6 +9,7 @@ export type ProductRow = {
   id: string; slug: string; category_id: string | null; name_he: string; name_en: string;
   description_he: string; description_en: string; status: ProductStatus; price: number;
   compare_at_price: number | null; sort_order: number; updated_at: string;
+  seo_title: string; seo_description: string;
   images: ImageRow[]; variants: VariantRow[];
 };
 

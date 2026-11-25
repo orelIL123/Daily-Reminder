@@ -1,8 +1,5 @@
 import type { Metadata } from 'next';
-import '@fontsource-variable/bodoni-moda/opsz.css';
-import '@fontsource-variable/bodoni-moda/opsz-italic.css';
-import '@fontsource-variable/jost';
-import '@fontsource-variable/heebo';
+import '../fonts';
 import '../globals.css';
 
 export const metadata: Metadata = {

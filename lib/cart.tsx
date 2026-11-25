@@ -1,5 +1,6 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { track } from './analytics/track';
 
 export type CartLine = { key: string; productId: string; size: string; color: string; qty: number };
 
@@ -38,6 +39,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const add = useCallback((line: Omit<CartLine, 'key'>) => {
     const key = `${line.productId}__${line.size}__${line.color}`;
+    track('add_to_cart', { productId: line.productId });
     setLines(all => {
       const existing = all.find(l => l.key === key);
       if (existing) return all.map(l => (l.key === key ? { ...l, qty: Math.min(20, l.qty + line.qty) } : l));

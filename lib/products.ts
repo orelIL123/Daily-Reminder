@@ -9,6 +9,10 @@ export type Product = {
   /** Category slug from Supabase — used by the category filters. */
   categorySlug?: string;
   compareAtPrice?: number;
+  /** Optional search-result title / description written in the admin. */
+  seoTitle?: string;
+  seoDescription?: string;
+  updatedAt?: string;
   /** Present when the catalogue comes from Supabase: real stock per size × color. */
   variants?: Variant[];
   name: string;

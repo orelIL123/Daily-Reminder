@@ -7,6 +7,7 @@ import type { Product } from '@/lib/products';
 import type { Category } from '@/lib/catalog';
 import CartDrawer from './CartDrawer';
 import AppPrompt from './AppPrompt';
+import Tracker from './Tracker';
 import { FilterProvider } from '@/lib/filter';
 
 export default function Providers({ products, categories, lang, children }: { products: Product[]; categories: Category[]; lang: Locale; children: React.ReactNode }) {
@@ -14,7 +15,7 @@ export default function Providers({ products, categories, lang, children }: { pr
     <I18nProvider lang={lang}>
       <CatalogContext.Provider value={products}>
         <CategoriesContext.Provider value={categories}>
-          <FilterProvider><CartProvider>{children}<CartDrawer /><AppPrompt /></CartProvider></FilterProvider>
+          <FilterProvider><CartProvider>{children}<CartDrawer /><AppPrompt /><Tracker /></CartProvider></FilterProvider>
         </CategoriesContext.Provider>
       </CatalogContext.Provider>
     </I18nProvider>

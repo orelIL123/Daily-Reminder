@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabaseShopper } from '@/lib/supabase/shopper';
 import Link from 'next/link';
@@ -9,6 +9,7 @@ import { useCart } from '@/lib/cart';
 import { useProducts } from '@/lib/useProducts';
 import { useI18n } from '@/lib/i18n/client';
 import { storeConfig } from '@/store.config';
+import { track } from '@/lib/analytics/track';
 
 const FREE_SHIPPING_FROM = storeConfig.commerce.freeShippingFrom;
 const SHIPPING = storeConfig.commerce.shippingPrice;
@@ -41,9 +42,26 @@ export default function CheckoutPage() {
   const subtotal = rows.reduce((s, r) => s + r.p!.price * r.l.qty, 0);
   const shipping = subtotal >= FREE_SHIPPING_FROM || subtotal === 0 ? 0 : SHIPPING;
 
+  // analytics: reaching checkout, and the last field filled in (the field's name only, never what was typed)
+  const started = useRef(false);
+  const filled = useRef(new Set<string>());
+  useEffect(() => {
+    if (started.current || rows.length === 0) return;
+    started.current = true;
+    track('checkout_start');
+  }, [rows.length]);
+  function fieldDone(e: React.FocusEvent<HTMLFormElement>) {
+    const el = e.target as unknown as HTMLInputElement;
+    if (!el.name || el.type === 'password' || el.type === 'checkbox' || !el.value.trim() || filled.current.has(el.name)) return;
+    filled.current.add(el.name);
+    track('checkout_field', { detail: el.name });
+  }
+
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true); setError('');
+    track('checkout_submit');
+    let failure = 'network';
     const form = Object.fromEntries(new FormData(e.currentTarget).entries());
     const { account_password, ...customer } = form;
     try {
@@ -67,9 +85,11 @@ export default function CheckoutPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(c.errors[data.code] ?? c.errors.generic);
+      if (!res.ok) { failure = String(data.code || 'generic'); throw new Error(c.errors[data.code] ?? c.errors.generic); }
+      track('order_placed');
       window.location.href = data.redirectUrl;
     } catch (err) {
+      track('checkout_error', { detail: failure });
       setError(err instanceof TypeError ? c.errors.generic : (err as Error).message);
       setBusy(false);
     }
@@ -82,7 +102,7 @@ export default function CheckoutPage() {
         <span className="secure"><Lock size={14} /> {c.secure}</span>
       </header>
       <div className="checkout-body">
-        <form className="checkout-form" onSubmit={submit}>
+        <form className="checkout-form" onSubmit={submit} onBlur={fieldDone}>
           <Link href={href('/')} className="back-link"><ArrowLeft size={14} className="dir-icon" /> {c.continue}</Link>
           <h1>{c.title}</h1>
           <fieldset>

@@ -21,7 +21,7 @@ const en = {
   },
   showcase: { hintFine: 'Hover or drag the rail to explore', hintTouch: 'Swipe the rail · tap to open', categories: 'Shop by category' },
   cta: { shopPiece: 'Shop this piece', shopCollection: 'Shop the collection' },
-  collection: { title: 'The collection', pieces: (n: number) => `${n} piece${n === 1 ? '' : 's'}`, colors: (n: number) => `${n} color${n === 1 ? '' : 's'}`, all: 'All', filter: 'Filter by category', comingSoon: 'New pieces are on their way. Turn on notifications to hear first.' },
+  collection: { title: 'The collection', more: 'You may also like', pieces: (n: number) => `${n} piece${n === 1 ? '' : 's'}`, colors: (n: number) => `${n} color${n === 1 ? '' : 's'}`, all: 'All', filter: 'Filter by category', comingSoon: 'New pieces are on their way. Turn on notifications to hear first.' },
   editorial: { label: 'Behind the collection' },
   footer: { shipping: 'Shipping', returns: 'Returns', terms: 'Terms', accessibility: 'Accessibility', contact: 'Contact', privacy: 'Privacy', followUs: 'Get in touch' },
   app: {

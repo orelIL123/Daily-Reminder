@@ -4,6 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Check, ImagePlus, Plus, Trash2, X } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import { compose, prepare, scaleFor, type Prepared } from '@/lib/admin/compose';
+import { publishNow } from '@/lib/admin/settings';
+import { clip } from '@/lib/seo';
+import { storeConfig } from '@/store.config';
+import SearchPreview from './SearchPreview';
 import { PRODUCT_STATUS_LABEL, VIEW_LABEL, type Category, type ProductRow, type ProductStatus, type View } from '@/lib/admin/types';
 
 const SIZE_PRESETS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
@@ -25,6 +29,7 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
     category_id: product?.category_id ?? categories[0]?.id ?? '',
     price: product ? String(product.price) : '', compare_at_price: product?.compare_at_price != null ? String(product.compare_at_price) : '',
     status: (product?.status ?? 'draft') as ProductStatus,
+    seo_title: product?.seo_title ?? '', seo_description: product?.seo_description ?? '',
   });
   const live = product?.variants.filter(v => v.is_active) ?? [];
   const [sizes, setSizes] = useState<string[]>(product ? uniq(live.sort((a, b) => a.sort_order - b.sort_order).map(v => v.size)) : ['S', 'M', 'L', 'XL']);
@@ -97,6 +102,7 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
       const res = await db.from('products').delete().eq('id', product.id);
       if (res.error) throw res.error;
       setBusy('');
+      void publishNow();
       onClose(true);
     } catch (e) {
       setBusy('');
@@ -125,6 +131,7 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
         category_id: f.category_id || null, price,
         compare_at_price: f.compare_at_price === '' ? null : Number(f.compare_at_price),
         status: f.status,
+        seo_title: f.seo_title.trim(), seo_description: f.seo_description.trim(),
       };
       let id = product?.id;
       let slug = product?.slug;
@@ -186,6 +193,7 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
         if (res.error) throw res.error;
       }
       setBusy('');
+      void publishNow();
       onClose(true);
     } catch (e) {
       setBusy('');
@@ -225,6 +233,15 @@ export default function ProductForm({ product, categories, nextSort, onClose }: 
           <label>מחיר (₪)<input type="number" min="0" step="1" inputMode="decimal" value={f.price} onChange={set('price')} dir="ltr" /></label>
           <label>מחיר לפני הנחה (לא חובה)<input type="number" min="0" step="1" inputMode="decimal" value={f.compare_at_price} onChange={set('compare_at_price')} dir="ltr" /></label>
         </div>
+
+        <h3>איך המוצר מופיע בגוגל (לא חובה)</h3>
+        <div className="adm-form">
+          <label className="span2">כותרת באנגלית<input dir="ltr" value={f.seo_title} onChange={set('seo_title')} placeholder={`${f.name_en || 'Product name'} — ${storeConfig.brand.name}`} /></label>
+          <label className="span2">תיאור קצר באנגלית, עד 160 תווים<textarea dir="ltr" rows={2} value={f.seo_description} onChange={set('seo_description')} placeholder={clip(f.description_en)} /></label>
+        </div>
+        <SearchPreview url={`/products/${product?.slug ?? slugify(f.name_en || 'product')}`}
+          title={f.seo_title || `${f.name_en || 'Product name'} — ${storeConfig.brand.name}`}
+          description={clip(f.seo_description || f.description_en || `${f.name_en} by ${storeConfig.brand.name}.`)} />
 
         <h3>מידות, צבעים ומלאי</h3>
         <div className="adm-tags">

@@ -7,7 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase/browser';
 import { LOW_STOCK, PRODUCT_STATUS_LABEL, ils, type Category, type ProductRow, type ProductStatus } from '@/lib/admin/types';
 import ProductForm from './ProductForm';
 
-export const PRODUCT_SELECT = 'id, slug, category_id, name_he, name_en, description_he, description_en, status, price, compare_at_price, sort_order, updated_at, images:product_images(id, product_id, view, url), variants:product_variants(id, product_id, size, color, sku, stock, sort_order, is_active)';
+export const PRODUCT_SELECT = 'id, slug, category_id, name_he, name_en, description_he, description_en, status, price, compare_at_price, sort_order, updated_at, seo_title, seo_description, images:product_images(id, product_id, view, url), variants:product_variants(id, product_id, size, color, sku, stock, sort_order, is_active)';
 
 export default function Products() {
   const [products, setProducts] = useState<ProductRow[]>([]);
